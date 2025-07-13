@@ -1,6 +1,6 @@
 const AuthService = require("../services/authService");
+const SinhVienAuthService = require("../services/sinhVienAuthService");
 const { successResponse, errorResponse } = require("../utils/response");
-const { validationResult } = require("express-validator");
 
 class AuthController {
   async login(req, res, next) {
@@ -18,13 +18,23 @@ class AuthController {
   async changePassword(req, res, next) {
     try {
       const { currentPassword, newPassword } = req.body;
-      const userId = req.user.MaNhanVien;
 
-      const result = await AuthService.changePassword(
-        userId,
-        currentPassword,
-        newPassword
-      );
+      let result;
+      if (req.user.userType === "employee") {
+        const userId = req.user.MaNhanVien;
+        result = await AuthService.changePassword(
+          userId,
+          currentPassword,
+          newPassword
+        );
+      } else {
+        const maSinhVien = req.user.MaSinhVien;
+        result = await SinhVienAuthService.changePassword(
+          maSinhVien,
+          currentPassword,
+          newPassword
+        );
+      }
 
       return successResponse(res, result, "Đổi mật khẩu thành công");
     } catch (error) {
@@ -34,9 +44,14 @@ class AuthController {
 
   async getProfile(req, res, next) {
     try {
-      const userId = req.user.MaNhanVien;
-
-      const profile = await AuthService.getUserProfile(userId);
+      let profile;
+      if (req.user.userType === "employee") {
+        const userId = req.user.MaNhanVien;
+        profile = await AuthService.getUserProfile(userId);
+      } else {
+        const maSinhVien = req.user.MaSinhVien;
+        profile = await SinhVienAuthService.getProfile(maSinhVien);
+      }
 
       return successResponse(res, profile, "Lấy thông tin profile thành công");
     } catch (error) {
@@ -45,9 +60,33 @@ class AuthController {
   }
 
   async logout(req, res) {
-    // In JWT-based auth, logout is typically handled on client-side
-    // But we can implement token blacklisting if needed
     return successResponse(res, null, "Đăng xuất thành công");
+  }
+
+  // Student-specific endpoints
+  async setPassword(req, res, next) {
+    try {
+      const { newPassword } = req.body;
+
+      if (req.user.userType !== "student") {
+        return errorResponse(
+          res,
+          "Chỉ sinh viên mới có thể thiết lập mật khẩu",
+          403
+        );
+      }
+
+      const maSinhVien = req.user.MaSinhVien;
+      const result = await SinhVienAuthService.setPassword(
+        maSinhVien,
+        newPassword,
+        maSinhVien
+      );
+
+      return successResponse(res, result, "Thiết lập mật khẩu thành công");
+    } catch (error) {
+      next(error);
+    }
   }
 }
 

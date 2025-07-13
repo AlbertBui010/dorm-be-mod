@@ -34,7 +34,7 @@ backend/
 │   │   ├── ChiTietDienNuoc.js
 │   │   ├── ThanhToan.js
 │   │   ├── YeuCauChuyenPhong.js
-│   │   └── LogHoatDong.js
+│   │
 │   ├── routes/              # API routes
 │   │   ├── index.js
 │   │   ├── authRoutes.js
@@ -165,7 +165,6 @@ npm start
 9. **ChiTietDienNuoc** - Chi tiết tiền điện nước từng sinh viên
 10. **ThanhToan** - Thanh toán
 11. **YeuCauChuyenPhong** - Yêu cầu chuyển phòng
-12. **LogHoatDong** - Log hoạt động
 
 ## Security Features
 

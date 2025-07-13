@@ -1,6 +1,6 @@
 const express = require("express");
 const SinhVienController = require("../controllers/sinhVienController");
-const { authenticate, authorize } = require("../middleware/auth");
+const { authenticate, authorizeEmployee } = require("../middleware/auth");
 const { handleValidationErrors } = require("../middleware/validation");
 const {
   createSinhVienValidation,
@@ -21,7 +21,7 @@ router.get("/:maSinhVien", SinhVienController.getSinhVienById);
 // POST /api/sinh-vien - Create new student (Admin only)
 router.post(
   "/",
-  authorize("Admin", "QuanLy"),
+  authorizeEmployee("Admin", "QuanLy"),
   createSinhVienValidation,
   handleValidationErrors,
   SinhVienController.createSinhVien
@@ -30,7 +30,7 @@ router.post(
 // PUT /api/sinh-vien/:maSinhVien - Update student (Admin only)
 router.put(
   "/:maSinhVien",
-  authorize("Admin", "QuanLy"),
+  authorizeEmployee("Admin", "QuanLy"),
   updateSinhVienValidation,
   handleValidationErrors,
   SinhVienController.updateSinhVien
@@ -39,7 +39,7 @@ router.put(
 // DELETE /api/sinh-vien/:maSinhVien - Delete student (Admin only)
 router.delete(
   "/:maSinhVien",
-  authorize("Admin"),
+  authorizeEmployee("Admin"),
   SinhVienController.deleteSinhVien
 );
 

@@ -12,7 +12,6 @@ const ChiSoDienNuoc = require("./ChiSoDienNuoc");
 const ChiTietDienNuoc = require("./ChiTietDienNuoc");
 const ThanhToan = require("./ThanhToan");
 const YeuCauChuyenPhong = require("./YeuCauChuyenPhong");
-const LogHoatDong = require("./LogHoatDong");
 
 // Define associations
 // Phong - Giuong (One to Many)
@@ -98,10 +97,6 @@ YeuCauChuyenPhong.belongsTo(Phong, {
   as: "PhongMoi",
 });
 
-// SinhVien - LogHoatDong (One to Many)
-SinhVien.hasMany(LogHoatDong, { foreignKey: "MaSinhVien", as: "LogHoatDongs" });
-LogHoatDong.belongsTo(SinhVien, { foreignKey: "MaSinhVien", as: "SinhVien" });
-
 module.exports = {
   sequelize,
   NhanVien,
@@ -115,5 +110,4 @@ module.exports = {
   ChiTietDienNuoc,
   ThanhToan,
   YeuCauChuyenPhong,
-  LogHoatDong,
 };

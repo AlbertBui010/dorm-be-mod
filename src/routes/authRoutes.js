@@ -1,6 +1,6 @@
 const express = require("express");
 const AuthController = require("../controllers/authController");
-const { authenticate } = require("../middleware/auth");
+const { authenticate, authorizeStudent } = require("../middleware/auth");
 const { handleValidationErrors } = require("../middleware/validation");
 const {
   loginValidation,
@@ -27,5 +27,8 @@ router.post(
   AuthController.changePassword
 );
 router.post("/logout", AuthController.logout);
+
+// Student-only routes
+router.post("/set-password", authorizeStudent, AuthController.setPassword);
 
 module.exports = router;
