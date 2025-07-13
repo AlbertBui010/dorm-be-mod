@@ -34,9 +34,26 @@ const createSinhVienValidation = [
     .optional()
     .isLength({ min: 6 })
     .withMessage("Mật khẩu phải có ít nhất 6 ký tự"),
+
+  body("EmailDaXacThuc")
+    .optional()
+    .isBoolean()
+    .withMessage("EmailDaXacThuc phải là true hoặc false"),
+
+  body("TrangThai")
+    .optional()
+    .isIn(["HoatDong", "KhongHoatDong"])
+    .withMessage("Trạng thái phải là HoatDong hoặc KhongHoatDong"),
 ];
 
 const updateSinhVienValidation = [
+  // Prevent updating MaSinhVien
+  body("MaSinhVien")
+    .if(body("MaSinhVien").exists())
+    .custom(() => {
+      throw new Error("Không được phép thay đổi mã sinh viên");
+    }),
+
   body("HoTen")
     .optional()
     .isLength({ min: 2, max: 100 })
@@ -63,6 +80,16 @@ const updateSinhVienValidation = [
     .optional()
     .isLength({ min: 6 })
     .withMessage("Mật khẩu phải có ít nhất 6 ký tự"),
+
+  body("EmailDaXacThuc")
+    .optional()
+    .isBoolean()
+    .withMessage("EmailDaXacThuc phải là true hoặc false"),
+
+  body("TrangThai")
+    .optional()
+    .isIn(["HoatDong", "KhongHoatDong"])
+    .withMessage("Trạng thái phải là HoatDong hoặc KhongHoatDong"),
 ];
 
 module.exports = {

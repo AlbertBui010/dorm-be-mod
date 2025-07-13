@@ -4,9 +4,9 @@ const { successResponse, paginationResponse } = require("../utils/response");
 class SinhVienController {
   async getAllSinhVien(req, res, next) {
     try {
-      const { page, limit, search, gioiTinh } = req.query;
+      const { page, limit, search, gioiTinh, trangThai } = req.query;
 
-      const filters = { search, gioiTinh };
+      const filters = { search, gioiTinh, trangThai };
       const pagination = { page, limit };
 
       const result = await SinhVienService.getAllSinhVien(filters, pagination);
@@ -96,6 +96,52 @@ class SinhVienController {
       const result = await SinhVienService.deleteSinhVien(maSinhVien);
 
       return successResponse(res, result, "Xóa sinh viên thành công");
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async toggleStudentStatus(req, res, next) {
+    try {
+      const { maSinhVien } = req.params;
+      const updatedBy = req.user.TenDangNhap;
+
+      const sinhVien = await SinhVienService.toggleStudentStatus(
+        maSinhVien,
+        updatedBy
+      );
+
+      return successResponse(
+        res,
+        sinhVien,
+        "Thay đổi trạng thái sinh viên thành công"
+      );
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async checkRelatedRecords(req, res, next) {
+    try {
+      const { maSinhVien } = req.params;
+
+      const result = await SinhVienService.checkRelatedRecords(maSinhVien);
+
+      return successResponse(
+        res,
+        result,
+        "Kiểm tra dữ liệu liên quan thành công"
+      );
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getStudentStats(req, res, next) {
+    try {
+      const stats = await SinhVienService.getStudentStats();
+
+      return successResponse(res, stats, "Lấy thống kê sinh viên thành công");
     } catch (error) {
       next(error);
     }

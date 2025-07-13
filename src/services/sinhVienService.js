@@ -21,6 +21,10 @@ class SinhVienService {
       whereClause.GioiTinh = filters.gioiTinh;
     }
 
+    if (filters.trangThai) {
+      whereClause.TrangThai = filters.trangThai;
+    }
+
     const { rows: sinhViens, count: total } = await SinhVien.findAndCountAll({
       where: whereClause,
       limit: parseInt(limit),
@@ -35,6 +39,7 @@ class SinhVienService {
         page: parseInt(page),
         limit: parseInt(limit),
         total,
+        totalPages: Math.ceil(total / limit),
       },
     };
   }
@@ -86,18 +91,28 @@ class SinhVienService {
   }
 
   async createSinhVien(sinhVienData, createdBy) {
+    // Validate required fields
+    if (!sinhVienData.MaSinhVien || !sinhVienData.HoTen) {
+      throw new Error("MaSinhVien và HoTen là bắt buộc");
+    }
+
     // Check if student already exists
     const existingSinhVien = await SinhVien.findOne({
       where: {
         [Op.or]: [
           { MaSinhVien: sinhVienData.MaSinhVien },
-          { Email: sinhVienData.Email },
+          ...(sinhVienData.Email ? [{ Email: sinhVienData.Email }] : []),
         ],
       },
     });
 
     if (existingSinhVien) {
-      throw new Error("Sinh viên hoặc email đã tồn tại");
+      if (existingSinhVien.MaSinhVien === sinhVienData.MaSinhVien) {
+        throw new Error("Mã sinh viên đã tồn tại");
+      }
+      if (existingSinhVien.Email === sinhVienData.Email) {
+        throw new Error("Email đã tồn tại");
+      }
     }
 
     // Hash password if provided
@@ -105,8 +120,12 @@ class SinhVienService {
       sinhVienData.MatKhau = await hashPassword(sinhVienData.MatKhau);
     }
 
+    // Set EmailDaXacThuc based on admin decision
+    const emailDaXacThuc = sinhVienData.EmailDaXacThuc || false;
+
     const sinhVien = await SinhVien.create({
       ...sinhVienData,
+      EmailDaXacThuc: emailDaXacThuc,
       NgayTao: new Date(),
       NguoiTao: createdBy,
     });
@@ -121,7 +140,12 @@ class SinhVienService {
       throw new Error("Sinh viên không tồn tại");
     }
 
-    // Check for duplicate email
+    // Prevent updating MaSinhVien
+    if (updateData.MaSinhVien && updateData.MaSinhVien !== maSinhVien) {
+      throw new Error("Không được phép thay đổi mã sinh viên");
+    }
+
+    // Check for duplicate email if email is being changed
     if (updateData.Email && updateData.Email !== sinhVien.Email) {
       const existingEmail = await SinhVien.findOne({
         where: {
@@ -135,13 +159,16 @@ class SinhVienService {
       }
     }
 
-    // Hash password if provided
+    // Hash password if being changed
     if (updateData.MatKhau) {
       updateData.MatKhau = await hashPassword(updateData.MatKhau);
     }
 
+    // Remove MaSinhVien from updateData to prevent accidental update
+    const { MaSinhVien: _, ...updateDataWithoutId } = updateData;
+
     await sinhVien.update({
-      ...updateData,
+      ...updateDataWithoutId,
       NgayCapNhat: new Date(),
       NguoiCapNhat: updatedBy,
     });
@@ -156,18 +183,135 @@ class SinhVienService {
       throw new Error("Sinh viên không tồn tại");
     }
 
-    // Check if student has any registrations or is assigned to a bed
-    const hasActiveRegistrations = await sinhVien.countDangKys();
-    const hasAssignedBed = await sinhVien.getGiuong();
+    // Check all related records before deletion
+    const relatedData = await this.checkRelatedRecords(maSinhVien);
 
-    if (hasActiveRegistrations > 0 || hasAssignedBed) {
+    if (relatedData.hasRelatedRecords) {
       throw new Error(
-        "Không thể xóa sinh viên đang có đăng ký hoặc được phân giường"
+        `Không thể xóa sinh viên do còn có dữ liệu liên quan: ${relatedData.relatedTables.join(
+          ", "
+        )}`
       );
     }
 
     await sinhVien.destroy();
     return { message: "Xóa sinh viên thành công" };
+  }
+
+  async checkRelatedRecords(maSinhVien) {
+    const {
+      Giuong,
+      DangKy,
+      LichSuOPhong,
+      ChiTietDienNuoc,
+      ThanhToan,
+      YeuCauChuyenPhong,
+    } = require("../models");
+
+    const relatedTables = [];
+    let hasRelatedRecords = false;
+
+    // Check Giuong (bed assignment)
+    const giuong = await Giuong.findOne({
+      where: { MaSinhVienChiEm: maSinhVien },
+    });
+    if (giuong) {
+      relatedTables.push("Giường");
+      hasRelatedRecords = true;
+    }
+
+    // Check DangKy (registrations)
+    const dangKy = await DangKy.findOne({
+      where: { MaSinhVien: maSinhVien },
+    });
+    if (dangKy) {
+      relatedTables.push("Đăng ký");
+      hasRelatedRecords = true;
+    }
+
+    // Check LichSuOPhong (room history)
+    const lichSuOPhong = await LichSuOPhong.findOne({
+      where: { MaSinhVien: maSinhVien },
+    });
+    if (lichSuOPhong) {
+      relatedTables.push("Lịch sử ở phòng");
+      hasRelatedRecords = true;
+    }
+
+    // Check ChiTietDienNuoc (utility bills)
+    const chiTietDienNuoc = await ChiTietDienNuoc.findOne({
+      where: { MaSinhVien: maSinhVien },
+    });
+    if (chiTietDienNuoc) {
+      relatedTables.push("Chi tiết điện nước");
+      hasRelatedRecords = true;
+    }
+
+    // Check ThanhToan (payments)
+    const thanhToan = await ThanhToan.findOne({
+      where: { MaSinhVien: maSinhVien },
+    });
+    if (thanhToan) {
+      relatedTables.push("Thanh toán");
+      hasRelatedRecords = true;
+    }
+
+    // Check YeuCauChuyenPhong (room transfer requests)
+    const yeuCauChuyenPhong = await YeuCauChuyenPhong.findOne({
+      where: { MaSinhVien: maSinhVien },
+    });
+    if (yeuCauChuyenPhong) {
+      relatedTables.push("Yêu cầu chuyển phòng");
+      hasRelatedRecords = true;
+    }
+
+    return {
+      hasRelatedRecords,
+      relatedTables,
+    };
+  }
+
+  async toggleStudentStatus(maSinhVien, updatedBy) {
+    const sinhVien = await SinhVien.findByPk(maSinhVien);
+
+    if (!sinhVien) {
+      throw new Error("Sinh viên không tồn tại");
+    }
+
+    // Toggle status (assuming we add a TrangThai field)
+    const newStatus =
+      sinhVien.TrangThai === "HoatDong" ? "KhongHoatDong" : "HoatDong";
+
+    await sinhVien.update({
+      TrangThai: newStatus,
+      NgayCapNhat: new Date(),
+      NguoiCapNhat: updatedBy,
+    });
+
+    return await this.getSinhVienById(maSinhVien);
+  }
+
+  async getStudentStats() {
+    const totalStudents = await SinhVien.count();
+
+    const activeStudents = await SinhVien.count({
+      where: { TrangThai: "HoatDong" },
+    });
+
+    const inactiveStudents = await SinhVien.count({
+      where: { TrangThai: "KhongHoatDong" },
+    });
+
+    const verifiedEmails = await SinhVien.count({
+      where: { EmailDaXacThuc: true },
+    });
+
+    return {
+      total: totalStudents,
+      active: activeStudents,
+      inactive: inactiveStudents,
+      verified: verifiedEmails,
+    };
   }
 }
 
