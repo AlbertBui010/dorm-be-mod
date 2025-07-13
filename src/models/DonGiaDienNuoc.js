@@ -11,15 +11,16 @@ const DonGiaDienNuoc = sequelize.define(
     },
     NgayApDung: {
       type: DataTypes.DATEONLY,
-      allowNull: true,
+      allowNull: false,
+      unique: true,
     },
     GiaDienPerKWh: {
       type: DataTypes.DECIMAL(10, 2),
-      allowNull: true,
+      allowNull: false,
     },
     GiaNuocPerM3: {
       type: DataTypes.DECIMAL(10, 2),
-      allowNull: true,
+      allowNull: false,
     },
     NgayKetThuc: {
       type: DataTypes.DATEONLY,
