@@ -30,7 +30,7 @@ const limiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
-app.use(limiter);
+// app.use(limiter); Mở khi production để giới hạn tần suất yêu cầu
 
 // Compression middleware
 app.use(compression());

@@ -75,16 +75,29 @@ const authorize = (...roles) => {
       return errorResponse(res, "Chưa xác thực", 401);
     }
 
+    console.log("User data:", {
+      userType: req.user.userType,
+      VaiTro: req.user.VaiTro,
+      requiredRoles: roles,
+    });
+
     // Allow all roles for students (they have limited access by default)
     if (req.user.userType === "student") {
       return next();
     }
 
+    // Flatten roles array if it contains arrays (for backward compatibility)
+    const flatRoles = roles.flat();
+
+    console.log("Flattened roles:", flatRoles);
+
     // Check employee roles
-    if (!roles.includes(req.user.VaiTro)) {
+    if (!flatRoles.includes(req.user.VaiTro)) {
+      console.log("Access denied - Role mismatch");
       return errorResponse(res, "Không có quyền truy cập", 403);
     }
 
+    console.log("Access granted");
     next();
   };
 };
