@@ -12,6 +12,9 @@ const router = express.Router();
 // All routes require authentication
 router.use(authenticate);
 
+// GET /api/sinh-vien/without-bed - Get students without bed (must be before /:maSinhVien)
+router.get("/without-bed", SinhVienController.getSinhVienWithoutBed);
+
 // GET /api/sinh-vien - Get all students
 router.get("/", SinhVienController.getAllSinhVien);
 

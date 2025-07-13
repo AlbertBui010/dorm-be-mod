@@ -1,4 +1,4 @@
-const { SinhVien } = require("../models");
+const { SinhVien, sequelize } = require("../models");
 const { hashPassword } = require("../utils/auth");
 const { Op } = require("sequelize");
 
@@ -54,6 +54,35 @@ class SinhVienService {
     }
 
     return sinhVien;
+  }
+
+  async getSinhVienWithoutBed(filters = {}) {
+    const { gioiTinhPhong } = filters;
+
+    const whereClause = {};
+
+    // Lọc theo giới tính phù hợp với phòng
+    if (gioiTinhPhong && gioiTinhPhong !== "Hỗn hợp") {
+      whereClause.GioiTinh = gioiTinhPhong;
+    }
+
+    const sinhViens = await SinhVien.findAll({
+      where: {
+        ...whereClause,
+        MaSinhVien: {
+          [Op.notIn]: sequelize.literal(`(
+            SELECT DISTINCT "MaSinhVienChiEm"
+            FROM "Giuong"
+            WHERE "MaSinhVienChiEm" IS NOT NULL
+          )`),
+        },
+      },
+      attributes: ["MaSinhVien", "HoTen", "GioiTinh", "Email", "SoDienThoai"],
+      order: [["HoTen", "ASC"]],
+      limit: 100,
+    });
+
+    return sinhViens;
   }
 
   async createSinhVien(sinhVienData, createdBy) {

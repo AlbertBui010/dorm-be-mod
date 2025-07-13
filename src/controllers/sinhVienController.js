@@ -38,6 +38,23 @@ class SinhVienController {
     }
   }
 
+  async getSinhVienWithoutBed(req, res, next) {
+    try {
+      const { gioiTinhPhong } = req.query;
+
+      const filters = { gioiTinhPhong };
+      const sinhViens = await SinhVienService.getSinhVienWithoutBed(filters);
+
+      return successResponse(
+        res,
+        sinhViens,
+        "Lấy danh sách sinh viên chưa có giường thành công"
+      );
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async createSinhVien(req, res, next) {
     try {
       const sinhVienData = req.body;
