@@ -2,6 +2,11 @@ const express = require("express");
 const PhongController = require("../controllers/phongController");
 const { authenticate, authorize } = require("../middleware/auth");
 const { handleValidationErrors } = require("../middleware/validation");
+const {
+  createPhongValidator,
+  updatePhongValidator,
+  phongParamValidator,
+} = require("../validators/phongValidator");
 
 const router = express.Router();
 
@@ -14,26 +19,46 @@ router.get("/", PhongController.getAllPhong);
 // GET /api/phong/available - Get available rooms
 router.get("/available", PhongController.getAvailableRooms);
 
-// GET /api/phong/:maPhong - Get room by ID
-router.get("/:maPhong", PhongController.getPhongById);
+// GET /api/phong/statistics - Get room statistics (QuanTriVien/QuanLy only)
+router.get(
+  "/statistics",
+  authorize("QuanTriVien", "QuanLy"),
+  PhongController.getRoomStatistics
+);
 
-// POST /api/phong - Create new room (Admin/QuanLy only)
+// GET /api/phong/:maPhong - Get room by ID
+router.get(
+  "/:maPhong",
+  phongParamValidator,
+  handleValidationErrors,
+  PhongController.getPhongById
+);
+
+// POST /api/phong - Create new room (QuanTriVien/QuanLy only)
 router.post(
   "/",
-  authorize("Admin", "QuanLy"),
+  authorize("QuanTriVien", "QuanLy"),
+  createPhongValidator,
   handleValidationErrors,
   PhongController.createPhong
 );
 
-// PUT /api/phong/:maPhong - Update room (Admin/QuanLy only)
+// PUT /api/phong/:maPhong - Update room (QuanTriVien/QuanLy only)
 router.put(
   "/:maPhong",
-  authorize("Admin", "QuanLy"),
+  authorize("QuanTriVien", "QuanLy"),
+  updatePhongValidator,
   handleValidationErrors,
   PhongController.updatePhong
 );
 
-// DELETE /api/phong/:maPhong - Delete room (Admin only)
-router.delete("/:maPhong", authorize("Admin"), PhongController.deletePhong);
+// DELETE /api/phong/:maPhong - Delete room (QuanTriVien only)
+router.delete(
+  "/:maPhong",
+  authorize("QuanTriVien"),
+  phongParamValidator,
+  handleValidationErrors,
+  PhongController.deletePhong
+);
 
 module.exports = router;

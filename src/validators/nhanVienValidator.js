@@ -65,7 +65,7 @@ const update = [
     .withMessage("Tên đăng nhập chỉ chứa chữ, số và dấu gạch dưới"),
 
   body("MatKhau")
-    .optional()
+    .optional({ nullable: true })
     .isLength({ min: 6 })
     .withMessage("Mật khẩu phải có ít nhất 6 ký tự"),
 

@@ -1,5 +1,6 @@
 const { Phong, Giuong, SinhVien } = require("../models");
 const { Op } = require("sequelize");
+const sequelize = require("../config/database");
 
 class PhongService {
   async getAllPhong(filters = {}, pagination = {}) {
@@ -16,11 +17,16 @@ class PhongService {
       whereClause.LoaiPhong = filters.loaiPhong;
     }
 
+    // Handle status filter with raw SQL
     if (filters.trangThai) {
       if (filters.trangThai === "available") {
-        whereClause.SoLuongHienTai = { [Op.lt]: sequelize.col("SucChua") };
+        whereClause[Op.and] = [
+          sequelize.literal('"SoLuongHienTai" < "SucChua"'),
+        ];
       } else if (filters.trangThai === "full") {
-        whereClause.SoLuongHienTai = sequelize.col("SucChua");
+        whereClause[Op.and] = [
+          sequelize.literal('"SoLuongHienTai" >= "SucChua"'),
+        ];
       }
     }
 
@@ -29,6 +35,8 @@ class PhongService {
       limit: parseInt(limit),
       offset: parseInt(offset),
       order: [["SoPhong", "ASC"]],
+      distinct: true,
+      col: "MaPhong",
       include: [
         {
           association: "Giuongs",
@@ -77,7 +85,7 @@ class PhongService {
   }
 
   async createPhong(phongData, createdBy) {
-    // Check if room number already exists
+    // 1. Check if room number already exists
     const existingPhong = await Phong.findOne({
       where: { SoPhong: phongData.SoPhong },
     });
@@ -86,18 +94,35 @@ class PhongService {
       throw new Error("Số phòng đã tồn tại");
     }
 
+    // 2. Validate business rules
+    if (phongData.SucChua < 1 || phongData.SucChua > 10) {
+      throw new Error("Sức chứa phòng phải từ 1 đến 10 người");
+    }
+
+    if (phongData.DienTich < 10 || phongData.DienTich > 100) {
+      throw new Error("Diện tích phòng phải từ 10 đến 100 m²");
+    }
+
+    if (phongData.GiaThueThang < 0) {
+      throw new Error("Giá phòng phải lớn hơn hoặc bằng 0");
+    }
+
+    // 3. Create room with initial values
     const phong = await Phong.create({
       ...phongData,
+      SoLuongHienTai: 0, // Initially empty
+      TrangThai: phongData.TrangThai || "Hoạt động",
       NgayTao: new Date(),
       NguoiTao: createdBy,
     });
 
-    // Create beds for the room
+    // 4. Create beds for the room
     const beds = [];
     for (let i = 1; i <= phongData.SucChua; i++) {
       beds.push({
         MaPhong: phong.MaPhong,
-        SoGiuong: `G${i}`,
+        SoGiuong: `G${i.toString().padStart(2, "0")}`, // G01, G02, etc.
+        DaCoNguoi: false,
         NgayTao: new Date(),
         NguoiTao: createdBy,
       });
@@ -129,6 +154,75 @@ class PhongService {
       }
     }
 
+    // Validate business rules if being updated
+    if (updateData.SucChua !== undefined) {
+      if (updateData.SucChua < 1 || updateData.SucChua > 10) {
+        throw new Error("Sức chứa phòng phải từ 1 đến 10 người");
+      }
+
+      // Check if reducing capacity would affect current residents
+      if (updateData.SucChua < phong.SoLuongHienTai) {
+        throw new Error(
+          "Không thể giảm sức chứa xuống dưới số lượng hiện tại đang ở"
+        );
+      }
+
+      // Update beds if capacity changes
+      if (updateData.SucChua !== phong.SucChua) {
+        if (updateData.SucChua > phong.SucChua) {
+          // Add more beds
+          const newBeds = [];
+          for (let i = phong.SucChua + 1; i <= updateData.SucChua; i++) {
+            newBeds.push({
+              MaPhong: maPhong,
+              SoGiuong: `G${i.toString().padStart(2, "0")}`,
+              DaCoNguoi: false,
+              NgayTao: new Date(),
+              NguoiTao: updatedBy,
+            });
+          }
+          await Giuong.bulkCreate(newBeds);
+        } else {
+          // Remove beds (only if they're empty)
+          const bedsToRemove = await Giuong.findAll({
+            where: {
+              MaPhong: maPhong,
+              SoGiuong: {
+                [Op.gt]: `G${updateData.SucChua.toString().padStart(2, "0")}`,
+              },
+            },
+          });
+
+          for (const bed of bedsToRemove) {
+            if (bed.DaCoNguoi) {
+              throw new Error("Không thể xóa giường đang có người ở");
+            }
+          }
+
+          await Giuong.destroy({
+            where: {
+              MaPhong: maPhong,
+              SoGiuong: {
+                [Op.gt]: `G${updateData.SucChua.toString().padStart(2, "0")}`,
+              },
+            },
+          });
+        }
+      }
+    }
+
+    if (updateData.DienTich !== undefined) {
+      if (updateData.DienTich < 10 || updateData.DienTich > 100) {
+        throw new Error("Diện tích phòng phải từ 10 đến 100 m²");
+      }
+    }
+
+    if (updateData.GiaThueThang !== undefined) {
+      if (updateData.GiaThueThang < 0) {
+        throw new Error("Giá phòng phải lớn hơn hoặc bằng 0");
+      }
+    }
+
     await phong.update({
       ...updateData,
       NgayCapNhat: new Date(),
@@ -150,7 +244,13 @@ class PhongService {
       throw new Error("Không thể xóa phòng đang có người ở");
     }
 
-    // Delete associated beds
+    // Check if room has any registrations
+    const hasRegistrations = await phong.countDangKys();
+    if (hasRegistrations > 0) {
+      throw new Error("Không thể xóa phòng có lịch sử đăng ký");
+    }
+
+    // Delete associated beds (should be empty already due to previous check)
     await Giuong.destroy({ where: { MaPhong: maPhong } });
 
     await phong.destroy();
@@ -160,9 +260,8 @@ class PhongService {
   async getAvailableRooms() {
     const phongs = await Phong.findAll({
       where: {
-        SoLuongHienTai: {
-          [Op.lt]: sequelize.col("SucChua"),
-        },
+        [Op.where]: sequelize.literal('"SoLuongHienTai" < "SucChua"'),
+        TrangThai: "Hoạt động",
       },
       include: [
         {
@@ -174,6 +273,20 @@ class PhongService {
     });
 
     return phongs;
+  }
+
+  async getRoomStatistics() {
+    const stats = await Phong.findAll({
+      attributes: [
+        "LoaiPhong",
+        [sequelize.fn("COUNT", sequelize.col("MaPhong")), "TongSoPhong"],
+        [sequelize.fn("SUM", sequelize.col("SucChua")), "TongSucChua"],
+        [sequelize.fn("SUM", sequelize.col("SoLuongHienTai")), "TongDangO"],
+      ],
+      group: ["LoaiPhong"],
+    });
+
+    return stats;
   }
 }
 

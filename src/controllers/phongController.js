@@ -90,6 +90,16 @@ class PhongController {
       next(error);
     }
   }
+
+  async getRoomStatistics(req, res, next) {
+    try {
+      const stats = await PhongService.getRoomStatistics();
+
+      return successResponse(res, stats, "Lấy thống kê phòng thành công");
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 module.exports = new PhongController();

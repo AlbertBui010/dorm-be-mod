@@ -30,6 +30,20 @@ const Phong = sequelize.define(
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
     },
+    DienTich: {
+      type: DataTypes.DECIMAL(5, 2),
+      allowNull: true,
+      defaultValue: 20.0,
+    },
+    TrangThai: {
+      type: DataTypes.STRING(50),
+      allowNull: true,
+      defaultValue: "Hoạt động",
+    },
+    MoTa: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
     NgayTao: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
