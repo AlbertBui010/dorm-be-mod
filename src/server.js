@@ -9,6 +9,7 @@ const rateLimit = require("express-rate-limit");
 const routes = require("./routes");
 const { errorHandler, notFound } = require("./middleware/error");
 const { sequelize } = require("./models");
+const PaymentCronJobs = require("./utils/paymentCronJobs");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -74,6 +75,9 @@ const startServer = async () => {
       console.log(`🚀 Server is running on port ${PORT}`);
       console.log(`📝 Environment: ${process.env.NODE_ENV || "development"}`);
       console.log(`🌐 API URL: http://localhost:${PORT}/api`);
+
+      // Initialize payment cron jobs
+      PaymentCronJobs.initializeJobs();
     });
   } catch (error) {
     console.error("❌ Unable to start server:", error);
