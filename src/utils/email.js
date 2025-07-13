@@ -308,6 +308,204 @@ class EmailService {
       </html>
     `;
   }
+
+  /**
+   * Gửi email thông báo duyệt đăng ký
+   */
+  async sendApprovalEmail({
+    email,
+    hoTen,
+    maSinhVien,
+    maPhong,
+    maGiuong,
+    ngayNhanPhong,
+  }) {
+    const loginLink = `${process.env.FRONTEND_URL}/login`;
+
+    const emailOptions = {
+      to: email,
+      subject:
+        "✅ Đăng ký ký túc xá đã được duyệt - Trường Đại học Sư phạm Kỹ thuật",
+      html: this.getApprovalEmailTemplate(
+        hoTen,
+        maSinhVien,
+        maPhong,
+        maGiuong,
+        ngayNhanPhong,
+        loginLink
+      ),
+    };
+
+    return await this.sendEmail(emailOptions);
+  }
+
+  /**
+   * Gửi email thông báo từ chối đăng ký
+   */
+  async sendRejectionEmail({ email, hoTen, lyDoTuChoi }) {
+    const emailOptions = {
+      to: email,
+      subject:
+        "❌ Đăng ký ký túc xá không được duyệt - Trường Đại học Sư phạm Kỹ thuật",
+      html: this.getRejectionEmailTemplate(hoTen, lyDoTuChoi),
+    };
+
+    return await this.sendEmail(emailOptions);
+  }
+
+  /**
+   * Template email duyệt đăng ký
+   */
+  getApprovalEmailTemplate(
+    hoTen,
+    maSinhVien,
+    maPhong,
+    maGiuong,
+    ngayNhanPhong,
+    loginLink
+  ) {
+    const formattedDate = new Date(ngayNhanPhong).toLocaleDateString("vi-VN");
+
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Đăng ký ký túc xá được duyệt</title>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background-color: #059669; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+          .content { background-color: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px; }
+          .button { display: inline-block; background-color: #059669; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 20px 0; }
+          .info-box { background-color: #dcfce7; border: 1px solid #059669; padding: 15px; border-radius: 6px; margin: 20px 0; }
+          .footer { text-align: center; margin-top: 30px; padding: 20px; background-color: #f3f4f6; border-radius: 6px; font-size: 14px; color: #6b7280; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>🎉 Chúc mừng! Đăng ký được duyệt</h1>
+          </div>
+          
+          <div class="content">
+            <p>Kính chào <strong>${hoTen}</strong>,</p>
+            
+            <p>Chúng tôi vui mừng thông báo rằng đăng ký ký túc xá của bạn đã được <strong>DUYỆT THÀNH CÔNG</strong>!</p>
+            
+            <div class="info-box">
+              <h3>📋 Thông tin phòng ở được phân bổ:</h3>
+              <ul>
+                <li><strong>Mã sinh viên:</strong> ${maSinhVien}</li>
+                <li><strong>Phòng:</strong> ${maPhong}</li>
+                <li><strong>Giường:</strong> ${maGiuong}</li>
+                <li><strong>Ngày nhận phòng:</strong> ${formattedDate}</li>
+              </ul>
+            </div>
+            
+            <p>Bạn có thể đăng nhập vào hệ thống để xem chi tiết và theo dõi thông tin thanh toán:</p>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${loginLink}" class="button">🔑 Đăng nhập hệ thống</a>
+            </div>
+            
+            <div style="background-color: #fef3c7; border: 1px solid #f59e0b; padding: 15px; border-radius: 6px; margin: 20px 0;">
+              <p style="margin: 0; color: #92400e;"><strong>📝 Các bước tiếp theo:</strong></p>
+              <ol style="margin: 10px 0 0 0; color: #92400e;">
+                <li>Thanh toán tiền phòng theo hướng dẫn</li>
+                <li>Chuẩn bị giấy tờ cần thiết</li>
+                <li>Đến nhận phòng đúng thời gian</li>
+                <li>Tuân thủ nội quy ký túc xá</li>
+              </ol>
+            </div>
+            
+            <p><strong>🏠 Địa chỉ ký túc xá:</strong><br>
+            1 Võ Văn Ngân, Phường Linh Chiểu, Thủ Đức, TP.HCM</p>
+            
+            <p><strong>📞 Liên hệ hỗ trợ:</strong><br>
+            - Hotline: (028) 3896 1234<br>
+            - Email: ktx@stu.edu.vn</p>
+          </div>
+          
+          <div class="footer">
+            <p><strong>🏢 Phòng Quản lý Ký túc xá</strong><br>
+            Trường Đại học Sư phạm Kỹ thuật TP.HCM<br>
+            Chúc bạn có những trải nghiệm tuyệt vời tại ký túc xá!</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+  }
+
+  /**
+   * Template email từ chối đăng ký
+   */
+  getRejectionEmailTemplate(hoTen, lyDoTuChoi) {
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Thông báo từ chối đăng ký</title>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background-color: #dc2626; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+          .content { background-color: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px; }
+          .info-box { background-color: #fecaca; border: 1px solid #dc2626; padding: 15px; border-radius: 6px; margin: 20px 0; }
+          .contact-box { background-color: #dbeafe; border: 1px solid #2563eb; padding: 15px; border-radius: 6px; margin: 20px 0; }
+          .footer { text-align: center; margin-top: 30px; padding: 20px; background-color: #f3f4f6; border-radius: 6px; font-size: 14px; color: #6b7280; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>📋 Thông báo về đăng ký ký túc xá</h1>
+          </div>
+          
+          <div class="content">
+            <p>Kính chào <strong>${hoTen}</strong>,</p>
+            
+            <p>Chúng tôi xin thông báo rằng đăng ký ký túc xá của bạn không được duyệt trong đợt này.</p>
+            
+            <div class="info-box">
+              <h3>📝 Lý do không duyệt:</h3>
+              <p>${lyDoTuChoi}</p>
+            </div>
+            
+            <p>Chúng tôi rất tiếc về quyết định này. Bạn có thể:</p>
+            <ul>
+              <li>🔄 Đăng ký lại trong đợt tiếp theo</li>
+              <li>📞 Liên hệ để được tư vấn và hỗ trợ</li>
+              <li>📝 Cập nhật thông tin để phù hợp hơn với yêu cầu</li>
+            </ul>
+            
+            <div class="contact-box">
+              <p style="margin: 0; color: #1e40af;"><strong>📞 Thông tin liên hệ:</strong></p>
+              <ul style="margin: 10px 0 0 0; color: #1e40af;">
+                <li>Hotline: (028) 3896 1234</li>
+                <li>Email: ktx@stu.edu.vn</li>
+                <li>Địa chỉ: 1 Võ Văn Ngân, Thủ Đức, TP.HCM</li>
+                <li>Giờ làm việc: 8:00 - 17:00 (Thứ 2 - Thứ 6)</li>
+              </ul>
+            </div>
+            
+            <p>Cảm ơn bạn đã quan tâm đến ký túc xá của chúng tôi. Chúng tôi hy vọng sẽ có cơ hội phục vụ bạn trong tương lai.</p>
+          </div>
+          
+          <div class="footer">
+            <p><strong>🏢 Phòng Quản lý Ký túc xá</strong><br>
+            Trường Đại học Sư phạm Kỹ thuật TP.HCM<br>
+            Cảm ơn bạn đã hiểu và thông cảm!</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+  }
 }
 
 // Khởi tạo service
@@ -320,4 +518,22 @@ module.exports = {
     emailService.sendVerificationEmail(to, userName, token),
   sendPasswordSetupConfirmation: (to, userName, maSinhVien) =>
     emailService.sendPasswordSetupConfirmation(to, userName, maSinhVien),
+  sendApprovalEmail: ({
+    email,
+    hoTen,
+    maSinhVien,
+    maPhong,
+    maGiuong,
+    ngayNhanPhong,
+  }) =>
+    emailService.sendApprovalEmail({
+      email,
+      hoTen,
+      maSinhVien,
+      maPhong,
+      maGiuong,
+      ngayNhanPhong,
+    }),
+  sendRejectionEmail: ({ email, hoTen, lyDoTuChoi }) =>
+    emailService.sendRejectionEmail({ email, hoTen, lyDoTuChoi }),
 };

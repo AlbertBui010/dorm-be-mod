@@ -25,6 +25,7 @@ const Phong = sequelize.define(
     LoaiPhong: {
       type: DataTypes.STRING(50),
       allowNull: true,
+      comment: "Giới tính của phòng (Nam/Nữ)",
     },
     GiaThueThang: {
       type: DataTypes.DECIMAL(10, 2),

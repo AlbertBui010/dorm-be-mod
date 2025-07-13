@@ -24,6 +24,8 @@ const Giuong = sequelize.define(
     DaCoNguoi: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
+      comment:
+        "Trạng thái giường đã có người hay chưa, true = đã có, false = chưa có",
     },
     MaSinhVienChiEm: {
       type: DataTypes.STRING(10),
