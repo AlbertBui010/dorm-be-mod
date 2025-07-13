@@ -100,7 +100,20 @@ class SinhVienAuthService {
   async getProfile(maSinhVien) {
     const sinhVien = await SinhVien.findByPk(maSinhVien, {
       attributes: { exclude: ["MatKhau", "MaXacThucEmail"] },
-      include: [{ association: "Giuong" }, { association: "DangKys" }],
+      include: [
+        {
+          association: "Giuong",
+          include: [{ association: "Phong" }],
+        },
+        {
+          association: "dangKys",
+          where: { TrangThai: { [Op.in]: ["CHO_DUYET", "DUYET", "DANG_O"] } },
+          required: false,
+          include: [{ association: "Phong" }, { association: "Giuong" }],
+          order: [["NgayTao", "DESC"]],
+          limit: 1,
+        },
+      ],
     });
 
     if (!sinhVien) {

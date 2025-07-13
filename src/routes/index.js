@@ -5,6 +5,7 @@ const phongRoutes = require("./phongRoutes");
 const nhanVienRoutes = require("./nhanVienRoutes");
 const giuongRoutes = require("./giuongRoutes");
 const donGiaDienNuocRoutes = require("./donGiaDienNuocRoutes");
+const registrationRoutes = require("./registrationRoutes");
 
 const router = express.Router();
 
@@ -24,5 +25,6 @@ router.use("/phong", phongRoutes);
 router.use("/nhan-vien", nhanVienRoutes);
 router.use("/giuong", giuongRoutes);
 router.use("/don-gia-dien-nuoc", donGiaDienNuocRoutes);
+router.use("/registration", registrationRoutes);
 
 module.exports = router;

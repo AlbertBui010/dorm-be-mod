@@ -45,6 +45,11 @@ const DangKy = sequelize.define(
       type: DataTypes.DATEONLY,
       allowNull: true,
     },
+    NguyenVong: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      comment: "Nguyện vọng của sinh viên khi đăng ký",
+    },
     TrangThai: {
       type: DataTypes.STRING(30),
       allowNull: true,

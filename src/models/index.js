@@ -23,8 +23,11 @@ SinhVien.hasOne(Giuong, { foreignKey: "MaSinhVienChiEm", as: "Giuong" });
 Giuong.belongsTo(SinhVien, { foreignKey: "MaSinhVienChiEm", as: "SinhVien" });
 
 // SinhVien - DangKy (One to Many)
-SinhVien.hasMany(DangKy, { foreignKey: "MaSinhVien", as: "DangKys" });
-DangKy.belongsTo(SinhVien, { foreignKey: "MaSinhVien", as: "SinhVien" });
+SinhVien.hasMany(DangKy, { foreignKey: "MaSinhVien", as: "dangKys" });
+DangKy.belongsTo(SinhVien, { foreignKey: "MaSinhVien", as: "sinhVien" });
+
+// Thêm association ngược cho SinhVien để có thể lấy đăng ký hiện tại
+SinhVien.hasOne(DangKy, { foreignKey: "MaSinhVien", as: "dangKy" });
 
 // Phong - DangKy (One to Many)
 Phong.hasMany(DangKy, { foreignKey: "MaPhong", as: "DangKys" });
