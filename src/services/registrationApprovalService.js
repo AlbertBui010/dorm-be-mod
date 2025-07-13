@@ -582,8 +582,8 @@ class RegistrationApprovalService {
           email: registration.sinhVien.Email,
           hoTen: registration.sinhVien.HoTen,
           maSinhVien: registration.MaSinhVien,
-          maPhong: maPhong,
-          maGiuong: maGiuong,
+          maPhong: room.SoPhong, // Gửi tên phòng thay vì mã
+          maGiuong: bed.SoGiuong, // Gửi số giường thay vì mã
           ngayNhanPhong: registration.NgayNhanPhong,
         });
       } catch (emailError) {

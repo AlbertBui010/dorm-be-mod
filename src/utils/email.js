@@ -120,7 +120,7 @@ class EmailService {
     const emailOptions = {
       to: to,
       subject:
-        "Xác thực email đăng ký ký túc xá - Trường Đại học Sư phạm Kỹ thuật",
+        "Xác thực email đăng ký ký túc xá - Trường Đại học Công Nghệ Sài Gòn",
       html: this.getVerificationEmailTemplate(
         userName,
         verificationLink,
@@ -139,7 +139,7 @@ class EmailService {
 
     const emailOptions = {
       to: to,
-      subject: "Đăng ký ký túc xá hoàn tất - Trường Đại học Sư phạm Kỹ thuật",
+      subject: "Đăng ký ký túc xá hoàn tất - Trường Đại học Công Nghệ Sài Gòn",
       html: this.getPasswordSetupConfirmationTemplate(
         userName,
         maSinhVien,
@@ -183,7 +183,7 @@ class EmailService {
           <div class="content">
             <h2 style="color: #2563eb; margin-top: 0;">Xin chào ${userName}!</h2>
             
-            <p>Cảm ơn bạn đã đăng ký ở ký túc xá <strong>Trường Đại học Sư phạm Kỹ thuật</strong>.</p>
+            <p>Cảm ơn bạn đã đăng ký ở ký túc xá <strong>Trường Đại học Công Nghệ Sài Gòn</strong>.</p>
             
             <p>Để hoàn tất quá trình đăng ký, vui lòng xác thực email của bạn bằng cách nhấp vào nút bên dưới:</p>
             
@@ -216,8 +216,8 @@ class EmailService {
           
           <div class="footer">
             <p><strong>🏢 Phòng Quản lý Ký túc xá</strong><br>
-            Trường Đại học Sư phạm Kỹ thuật TP.HCM<br>
-            📧 Email: ktx@stu.edu.vn | ☎️ Hotline: (028) 3896 1234</p>
+            Trường Đại học Công Nghệ Sài Gòn<br>
+            📧 Email: ktx@stu.edu.vn | ☎️ Hotline: 0929812000</p>
             
             <p>Nếu bạn không thực hiện đăng ký này, vui lòng bỏ qua email này hoặc liên hệ với chúng tôi để được hỗ trợ.</p>
           </div>
@@ -260,7 +260,7 @@ class EmailService {
           <div class="content">
             <h2 style="color: #16a34a; margin-top: 0;">Chúc mừng ${userName}!</h2>
             
-            <p>Bạn đã hoàn tất quá trình đăng ký ở ký túc xá <strong>Trường Đại học Sư phạm Kỹ thuật</strong>.</p>
+            <p>Bạn đã hoàn tất quá trình đăng ký ở ký túc xá <strong>Trường Đại học Công Nghệ Sài Gòn</strong>.</p>
             
             <div class="info-box">
               <p style="margin: 0;"><strong>📋 Thông tin tài khoản của bạn:</strong></p>
@@ -297,8 +297,8 @@ class EmailService {
           
           <div class="footer">
             <p><strong>🏢 Phòng Quản lý Ký túc xá</strong><br>
-            Trường Đại học Sư phạm Kỹ thuật TP.HCM<br>
-            📧 Email: ktx@stu.edu.vn | ☎️ Hotline: (028) 3896 1234<br>
+            Trường Đại học Công Nghệ Sài Gòn<br>
+            📧 Email: ktx@stu.edu.vn | ☎️ Hotline: 0929812000<br>
             🏠 Địa chỉ: 1 Võ Văn Ngân, Thủ Đức, TP.HCM</p>
             
             <p>Cảm ơn bạn đã tin tướng và lựa chọn ký túc xá của chúng tôi!</p>
@@ -316,8 +316,8 @@ class EmailService {
     email,
     hoTen,
     maSinhVien,
-    maPhong,
-    maGiuong,
+    maPhong, // Tên phòng (SoPhong)
+    maGiuong, // Số giường (SoGiuong)
     ngayNhanPhong,
   }) {
     const loginLink = `${process.env.FRONTEND_URL}/login`;
@@ -325,12 +325,12 @@ class EmailService {
     const emailOptions = {
       to: email,
       subject:
-        "✅ Đăng ký ký túc xá đã được duyệt - Trường Đại học Sư phạm Kỹ thuật",
+        "✅ Đăng ký ký túc xá đã được duyệt - Trường Đại học Công Nghệ Sài Gòn",
       html: this.getApprovalEmailTemplate(
         hoTen,
         maSinhVien,
-        maPhong,
-        maGiuong,
+        maPhong, // Tên phòng
+        maGiuong, // Số giường
         ngayNhanPhong,
         loginLink
       ),
@@ -346,7 +346,7 @@ class EmailService {
     const emailOptions = {
       to: email,
       subject:
-        "❌ Đăng ký ký túc xá không được duyệt - Trường Đại học Sư phạm Kỹ thuật",
+        "❌ Đăng ký ký túc xá không được duyệt - Trường Đại học Công Nghệ Sài Gòn",
       html: this.getRejectionEmailTemplate(hoTen, lyDoTuChoi),
     };
 
@@ -359,8 +359,8 @@ class EmailService {
   getApprovalEmailTemplate(
     hoTen,
     maSinhVien,
-    maPhong,
-    maGiuong,
+    tenPhong, // Tên phòng (ví dụ: A303)
+    soGiuong, // Số giường (ví dụ: G01)
     ngayNhanPhong,
     loginLink
   ) {
@@ -398,8 +398,8 @@ class EmailService {
               <h3>📋 Thông tin phòng ở được phân bổ:</h3>
               <ul>
                 <li><strong>Mã sinh viên:</strong> ${maSinhVien}</li>
-                <li><strong>Phòng:</strong> ${maPhong}</li>
-                <li><strong>Giường:</strong> ${maGiuong}</li>
+                <li><strong>Phòng:</strong> ${tenPhong}</li>
+                <li><strong>Giường:</strong> ${soGiuong}</li>
                 <li><strong>Ngày nhận phòng:</strong> ${formattedDate}</li>
               </ul>
             </div>
@@ -421,16 +421,16 @@ class EmailService {
             </div>
             
             <p><strong>🏠 Địa chỉ ký túc xá:</strong><br>
-            1 Võ Văn Ngân, Phường Linh Chiểu, Thủ Đức, TP.HCM</p>
+            180 Cao Lỗ, Phường 4, Quận 8, TP HCM</p>
             
             <p><strong>📞 Liên hệ hỗ trợ:</strong><br>
-            - Hotline: (028) 3896 1234<br>
+            - Hotline: 0929812000<br>
             - Email: ktx@stu.edu.vn</p>
           </div>
           
           <div class="footer">
             <p><strong>🏢 Phòng Quản lý Ký túc xá</strong><br>
-            Trường Đại học Sư phạm Kỹ thuật TP.HCM<br>
+            Trường Đại học Công Nghệ Sài Gòn<br>
             Chúc bạn có những trải nghiệm tuyệt vời tại ký túc xá!</p>
           </div>
         </div>
@@ -486,7 +486,7 @@ class EmailService {
             <div class="contact-box">
               <p style="margin: 0; color: #1e40af;"><strong>📞 Thông tin liên hệ:</strong></p>
               <ul style="margin: 10px 0 0 0; color: #1e40af;">
-                <li>Hotline: (028) 3896 1234</li>
+                <li>Hotline: 0929812000</li>
                 <li>Email: ktx@stu.edu.vn</li>
                 <li>Địa chỉ: 1 Võ Văn Ngân, Thủ Đức, TP.HCM</li>
                 <li>Giờ làm việc: 8:00 - 17:00 (Thứ 2 - Thứ 6)</li>
@@ -498,7 +498,7 @@ class EmailService {
           
           <div class="footer">
             <p><strong>🏢 Phòng Quản lý Ký túc xá</strong><br>
-            Trường Đại học Sư phạm Kỹ thuật TP.HCM<br>
+            Trường Đại học Công Nghệ Sài Gòn<br>
             Cảm ơn bạn đã hiểu và thông cảm!</p>
           </div>
         </div>
