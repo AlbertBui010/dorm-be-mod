@@ -70,8 +70,6 @@ class AuthService {
       VaiTro: user.VaiTro,
     };
 
-    await LogService.logLogin(userInfo, "employee");
-
     return {
       user: userInfo,
       token,
