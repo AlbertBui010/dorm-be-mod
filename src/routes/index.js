@@ -2,6 +2,7 @@ const express = require("express");
 const authRoutes = require("./authRoutes");
 const sinhVienRoutes = require("./sinhVienRoutes");
 const phongRoutes = require("./phongRoutes");
+const nhanVienRoutes = require("./nhanVienRoutes");
 
 const router = express.Router();
 
@@ -18,5 +19,6 @@ router.get("/health", (req, res) => {
 router.use("/auth", authRoutes);
 router.use("/sinh-vien", sinhVienRoutes);
 router.use("/phong", phongRoutes);
+router.use("/nhan-vien", nhanVienRoutes);
 
 module.exports = router;

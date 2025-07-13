@@ -120,9 +120,15 @@ const authorizeStudent = (req, res, next) => {
   next();
 };
 
+// Alias for backward compatibility
+const authenticateToken = authenticate;
+const requireRole = authorize;
+
 module.exports = {
   authenticate,
+  authenticateToken,
   authorize,
+  requireRole,
   authorizeEmployee,
   authorizeStudent,
 };

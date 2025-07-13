@@ -14,6 +14,10 @@ down:
 down-volumes:
 	docker-compose down -v
 
+# Database operations
+seed:
+	npm run seed-user-pass
+
 # Chạy ứng dụng (Development)
 dev:
 	npm run dev
