@@ -1,4 +1,4 @@
-# Hệ thống quản lý ký túc xá - BackendKTX
+# Hệ thống quản lý ký túc xá - BackendKTXX
 
 ## Tổng quan
 
