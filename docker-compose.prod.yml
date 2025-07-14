@@ -1,7 +1,7 @@
 version: "3"
 services:
   backend:
-    image: ${{ secrets.DOCKERHUB_USERNAME }}/backend:latest
+    image: ${DOCKERHUB_USERNAME}/backend:latest/backend:latest
     restart: always
     ports:
       - "3000:3000"
