@@ -407,7 +407,7 @@ class PaymentService {
       }
 
       // Build signature payload
-      const sortedKeys = Object.keys(data).sort();
+      const sortedKeys = Object.keys(data).sort(); // sort keys for consistent order
       console.log("📊 Sorted keys:", sortedKeys);
 
       const signaturePayload = sortedKeys

@@ -1,0 +1,53 @@
+name: Build and Deploy Docker to VM
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/backend:latest .
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/backend:latest
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VM_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -p ${{ secrets.VM_PORT }} ${{ secrets.VM_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Copy docker-compose.prod.yml to server as docker-compose.yml
+        run: |
+          scp -i ~/.ssh/id_ed25519 -P ${{ secrets.VM_PORT }} docker-compose.prod.yml ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }}:${{ secrets.VM_PATH }}/docker-compose.yml
+
+      - name: Deploy on server with Docker Compose
+        run: |
+          ssh -i ~/.ssh/id_ed25519 -p ${{ secrets.VM_PORT }} ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} '
+            set -e
+            if ! command -v docker > /dev/null; then
+              curl -fsSL https://get.docker.com | sh
+              sudo usermod -aG docker $USER
+            fi
+            if ! command -v docker-compose > /dev/null; then
+              sudo apt-get update && sudo apt-get install -y docker-compose
+            fi
+            cd ${{ secrets.VM_PATH }}
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/backend:latest
+            docker compose down || true
+            docker compose up -d
+          '
