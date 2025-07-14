@@ -1,4 +1,4 @@
-# Hệ thống quản lý ký túc xá - BackendKTXSTU
+# Hệ thống quản lý ký túc xá - BackendKTXSTUU
 
 ## Tổng quan
 
