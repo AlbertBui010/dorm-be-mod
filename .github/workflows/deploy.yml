@@ -3,7 +3,7 @@ name: Build and Deploy Docker to VM
 on:
   push:
     branches:
-      - main
+      - product
 
 jobs:
   build-and-deploy:
