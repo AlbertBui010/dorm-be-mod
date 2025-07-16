@@ -49,6 +49,21 @@ const ThanhToan = sequelize.define(
       type: DataTypes.DATEONLY,
       allowNull: true,
     },
+    OrderCode: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+      comment: "Mã đơn hàng từ PayOS",
+    },
+    Reference: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+      comment: "Mã tham chiếu từ PayOS",
+    },
+    MoTa: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      comment: "Ghi chú thanh toán",
+    },
     NgayTao: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
