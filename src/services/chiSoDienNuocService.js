@@ -1,4 +1,5 @@
-const { ChiSoDienNuoc } = require("../models");
+const { ChiSoDienNuoc, Phong } = require("../models");
+const { Op } = require("sequelize");
 
 class ChiSoDienNuocService {
   async create(data, user) {
@@ -45,11 +46,33 @@ class ChiSoDienNuocService {
   }
 
   async getList(filter = {}) {
-    // Chỉ filter theo MaPhong, ThangNam nếu có
     const where = {};
-    if (filter.MaPhong) where.MaPhong = filter.MaPhong;
-    if (filter.ThangNam) where.ThangNam = filter.ThangNam;
-    return await ChiSoDienNuoc.findAll({ where });
+    const include = [];
+    if (filter.search) {
+      where[Op.or] = [{ ThangNam: { [Op.like]: `%${filter.search}%` } }];
+    }
+
+    const { page, limit } = filter;
+    const offset = (page - 1) * limit;
+
+    const { count, rows } = await ChiSoDienNuoc.findAndCountAll({
+      where,
+      include,
+      offset,
+      limit,
+      order: [["ThangNam", "DESC"]],
+      distinct: true,
+    });
+
+    return {
+      data: rows,
+      pagination: {
+        page,
+        limit,
+        total: count,
+        totalPages: Math.ceil(count / limit),
+      },
+    };
   }
 }
 
