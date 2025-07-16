@@ -1,5 +1,6 @@
 const { Giuong, Phong, SinhVien, DangKy, sequelize } = require("../models");
 const { Op } = require("sequelize");
+const { PHONG_STATUS } = require("../constants/phong");
 
 class GiuongService {
   async getAllGiuong(filters = {}, pagination = {}) {
@@ -433,7 +434,7 @@ class GiuongService {
           model: Phong,
           as: "Phong",
           attributes: ["MaPhong", "SoPhong", "LoaiPhong"],
-          where: { TrangThai: "Hoạt động" },
+          where: { TrangThai: PHONG_STATUS.HOAT_DONG },
         },
       ],
       order: [
