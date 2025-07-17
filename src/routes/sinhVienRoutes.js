@@ -15,28 +15,40 @@ router.use(authenticate);
 // GET /api/sinh-vien/without-bed - Get students without bed (must be before /:maSinhVien)
 router.get("/without-bed", SinhVienController.getSinhVienWithoutBed);
 
-// GET /api/sinh-vien/stats - Get student statistics (must be before /:maSinhVien)
-router.get("/stats", SinhVienController.getStudentStats);
+// GET /api/sinhvien/stats - Get student statistics
+router.get(
+  "/stats",
+  authorizeEmployee("QuanTriVien", "NhanVien"),
+  SinhVienController.getStudentStats
+);
 
-// GET /api/sinh-vien - Get all students
-router.get("/", SinhVienController.getAllSinhVien);
+// GET /api/sinhvien - Get all students with filtering and pagination
+router.get(
+  "/",
+  authorizeEmployee("QuanTriVien", "NhanVien"),
+  SinhVienController.getAllSinhVien
+);
 
-// GET /api/sinh-vien/:maSinhVien - Get student by ID
-router.get("/:maSinhVien", SinhVienController.getSinhVienById);
+// GET /api/sinhvien/:maSinhVien - Get student by ID
+router.get(
+  "/:maSinhVien",
+  authorizeEmployee("QuanTriVien", "NhanVien"),
+  SinhVienController.getSinhVienById
+);
 
-// POST /api/sinh-vien - Create new student (QuanTriVien only)
+// POST /api/sinhvien - Create new student
 router.post(
   "/",
-  authorizeEmployee("QuanTriVien", "QuanLy"),
+  authorizeEmployee("QuanTriVien", "NhanVien"),
   createSinhVienValidation,
   handleValidationErrors,
   SinhVienController.createSinhVien
 );
 
-// PUT /api/sinh-vien/:maSinhVien - Update student (QuanTriVien only)
+// PUT /api/sinhvien/:maSinhVien - Update student
 router.put(
   "/:maSinhVien",
-  authorizeEmployee("QuanTriVien", "QuanLy"),
+  authorizeEmployee("QuanTriVien", "NhanVien"),
   updateSinhVienValidation,
   handleValidationErrors,
   SinhVienController.updateSinhVien
@@ -49,14 +61,14 @@ router.patch(
   SinhVienController.toggleStudentStatus
 );
 
-// GET /api/sinh-vien/:maSinhVien/check-related - Check related records (QuanTriVien only)
+// GET /api/sinh-vien/:maSinhVien/check-related - Check related records
 router.get(
   "/:maSinhVien/check-related",
-  authorizeEmployee("QuanTriVien", "QuanLy"),
+  authorizeEmployee("QuanTriVien", "NhanVien"),
   SinhVienController.checkRelatedRecords
 );
 
-// DELETE /api/sinh-vien/:maSinhVien - Delete student (QuanTriVien only)
+// DELETE /api/sinhvien/:maSinhVien - Delete student (QuanTriVien only)
 router.delete(
   "/:maSinhVien",
   authorizeEmployee("QuanTriVien"),

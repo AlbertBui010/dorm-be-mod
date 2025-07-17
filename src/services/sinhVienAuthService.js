@@ -107,7 +107,9 @@ class SinhVienAuthService {
         },
         {
           association: "dangKys",
-          where: { TrangThai: { [Op.in]: ["CHO_DUYET", "DUYET", "DANG_O"] } },
+          where: {
+            TrangThai: { [Op.in]: ["CHO_DUYET", "DA_DUYET", "DANG_O"] },
+          },
           required: false,
           include: [{ association: "Phong" }, { association: "Giuong" }],
           order: [["NgayTao", "DESC"]],

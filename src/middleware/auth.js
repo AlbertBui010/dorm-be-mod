@@ -154,10 +154,31 @@ const authorizeAdmin = (req, res, next) => {
     return errorResponse(res, "Chỉ nhân viên mới có quyền truy cập", 403);
   }
 
-  // Allow admin roles (QuanTriVien, Admin, etc.)
-  const adminRoles = ["QuanTriVien", "Admin", "QuanLy"];
+  // Allow both QuanTriVien and NhanVien (both have full access except employee management)
+  const adminRoles = ["QuanTriVien", "NhanVien"];
   if (!adminRoles.includes(req.user.VaiTro)) {
     return errorResponse(res, "Không có quyền quản trị", 403);
+  }
+
+  next();
+};
+
+const authorizeEmployeeManagement = (req, res, next) => {
+  if (!req.user) {
+    return errorResponse(res, "Chưa xác thực", 401);
+  }
+
+  if (req.user.userType !== "employee") {
+    return errorResponse(res, "Chỉ nhân viên mới có quyền truy cập", 403);
+  }
+
+  // Only QuanTriVien can manage employees
+  if (req.user.VaiTro !== "QuanTriVien") {
+    return errorResponse(
+      res,
+      "Chỉ quản trị viên mới có quyền quản lý nhân viên",
+      403
+    );
   }
 
   next();
@@ -175,4 +196,5 @@ module.exports = {
   authorizeEmployee,
   authorizeStudent,
   authorizeAdmin,
+  authorizeEmployeeManagement,
 };

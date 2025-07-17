@@ -49,8 +49,8 @@ const create = [
 
   body("VaiTro")
     .notEmpty()
-    .withMessage("Vai trò là bắt buộc")
-    .isIn(["QuanTriVien", "QuanLy", "NhanVien"])
+    .withMessage("Vai trò không được để trống")
+    .isIn(["QuanTriVien", "NhanVien"])
     .withMessage("Vai trò không hợp lệ"),
 
   handleValidationErrors,
@@ -90,7 +90,7 @@ const update = [
 
   body("VaiTro")
     .optional()
-    .isIn(["QuanTriVien", "QuanLy", "NhanVien"])
+    .isIn(["QuanTriVien", "NhanVien"])
     .withMessage("Vai trò không hợp lệ"),
 
   handleValidationErrors,
