@@ -1,5 +1,6 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
+const { PHONG_STATUS } = require("../constants/phong");
 
 const Phong = sequelize.define(
   "Phong",
@@ -39,7 +40,7 @@ const Phong = sequelize.define(
     TrangThai: {
       type: DataTypes.STRING(50),
       allowNull: true,
-      defaultValue: "Hoạt động",
+      defaultValue: PHONG_STATUS.HOAT_DONG,
     },
     MoTa: {
       type: DataTypes.TEXT,
