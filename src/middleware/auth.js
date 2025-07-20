@@ -134,10 +134,10 @@ const authorizeEmployee = (...roles) => {
 };
 
 const authorizeStudent = (req, res, next) => {
+  console.log("::::::::::::::::::::::::", req.user);
   if (!req.user) {
     return errorResponse(res, "Chưa xác thực", 401);
   }
-
   if (req.user.userType !== "student") {
     return errorResponse(res, "Chỉ sinh viên mới có quyền truy cập", 403);
   }
