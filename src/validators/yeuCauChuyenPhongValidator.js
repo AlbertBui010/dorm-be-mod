@@ -12,9 +12,19 @@ const getAllYeuCauValidation = [
     .isInt({ min: 1, max: 100 })
     .withMessage("Giới hạn phải từ 1-100"),
 
+  query("search")
+    .optional()
+    .isLength({ max: 100 })
+    .withMessage("Từ khóa tìm kiếm không được quá 100 ký tự"),
+
   query("trangThai")
     .optional()
-    .isIn(["CHO_DUYET", "DA_DUYET", "TU_CHOI", "DANG_XU_LY"])
+    .custom((value) => {
+      if (value === "" || value === undefined || value === null) {
+        return true; // Cho phép giá trị rỗng
+      }
+      return ["CHO_DUYET", "DA_DUYET", "TU_CHOI", "DANG_XU_LY"].includes(value);
+    })
     .withMessage("Trạng thái không hợp lệ"),
 
   query("maSinhVien")

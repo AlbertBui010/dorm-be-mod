@@ -15,6 +15,7 @@ class YeuCauChuyenPhongController {
       const {
         page,
         limit,
+        search,
         trangThai,
         maSinhVien,
         maPhongMoi,
@@ -22,7 +23,14 @@ class YeuCauChuyenPhongController {
         denNgay,
       } = req.query;
 
-      const filters = { trangThai, maSinhVien, maPhongMoi, tuNgay, denNgay };
+      const filters = {
+        search,
+        trangThai,
+        maSinhVien,
+        maPhongMoi,
+        tuNgay,
+        denNgay,
+      };
       const pagination = { page, limit };
 
       const result = await yeuCauChuyenPhongService.getAllYeuCau(

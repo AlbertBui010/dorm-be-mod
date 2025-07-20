@@ -34,6 +34,27 @@ class YeuCauChuyenPhongService {
       };
     }
 
+    // Search theo từ khóa
+    if (filters.search && filters.search.trim() !== "") {
+      whereClause[Op.or] = [
+        {
+          MaSinhVien: {
+            [Op.like]: `%${filters.search.trim()}%`,
+          },
+        },
+        {
+          "$SinhVien.HoTen$": {
+            [Op.like]: `%${filters.search.trim()}%`,
+          },
+        },
+        {
+          "$SinhVien.Email$": {
+            [Op.like]: `%${filters.search.trim()}%`,
+          },
+        },
+      ];
+    }
+
     const { rows: yeuCaus, count: total } =
       await YeuCauChuyenPhong.findAndCountAll({
         where: whereClause,
