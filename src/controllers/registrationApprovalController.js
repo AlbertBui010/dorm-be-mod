@@ -8,7 +8,7 @@ class RegistrationApprovalController {
    */
   async getPendingRegistrations(req, res) {
     try {
-      const { page = 1, limit = 10, search, gioiTinh, nguyenVong } = req.query;
+      const { page = 1, limit = 10, search, gioiTinh, nguyenVong, trangThai } = req.query;
 
       const result = await registrationApprovalService.getPendingRegistrations({
         page: parseInt(page),
@@ -16,6 +16,7 @@ class RegistrationApprovalController {
         search,
         gioiTinh,
         nguyenVong,
+        trangThai,
       });
 
       if (result.success) {

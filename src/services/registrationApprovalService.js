@@ -74,12 +74,22 @@ class RegistrationApprovalService {
     search,
     gioiTinh,
     nguyenVong,
+    trangThai,
   }) {
     try {
       const offset = (page - 1) * limit;
-      const whereConditions = {
-        TrangThai: "CHO_DUYET",
-      };
+      const whereConditions = {};
+      
+      // Sửa logic filter trạng thái
+      if (trangThai) {
+        if (trangThai.includes(',')) {
+          whereConditions.TrangThai = { [Op.in]: trangThai.split(',') };
+        } else {
+          whereConditions.TrangThai = trangThai;
+        }
+      } else {
+        whereConditions.TrangThai = "CHO_DUYET";
+      }
 
       // Điều kiện tìm kiếm cho SinhVien
       const sinhVienWhere = {};
@@ -259,18 +269,29 @@ class RegistrationApprovalService {
               "GioiTinh",
               "SoDienThoai",
             ],
-          },
-        ],
+          }
+        ]
       });
 
       if (!registration) {
-        return {
-          success: false,
-          message: "Không tìm thấy đăng ký",
-        };
+        return { success: false, message: "Không tìm thấy đăng ký" };
       }
 
-      // Format lại data để trả về flat structure
+      let soPhong = null, soGiuong = null;
+      if (registration.TrangThai === "DA_DUYET" && registration.sinhVien) {
+        // Tìm giường của sinh viên này
+        const giuong = await Giuong.findOne({
+          where: { MaSinhVienChiEm: registration.MaSinhVien },
+          include: [
+            { model: Phong, as: "Phong", attributes: ["SoPhong"] }
+          ]
+        });
+        if (giuong) {
+          soPhong = giuong.Phong?.SoPhong || null;
+          soGiuong = giuong.SoGiuong || null;
+        }
+      }
+
       const formattedData = {
         MaDangKy: registration.MaDangKy,
         MaSinhVien: registration.MaSinhVien,
@@ -284,6 +305,9 @@ class RegistrationApprovalService {
         TrangThai: registration.TrangThai,
         NgayTao: registration.NgayTao,
         NgayKetThucHopDong: registration.NgayKetThucHopDong,
+        Phong: soPhong,
+        Giuong: soGiuong,
+        LyDoTuChoi: registration.LyDoTuChoi || null,
       };
 
       return {
