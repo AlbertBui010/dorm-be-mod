@@ -1,5 +1,9 @@
 const cron = require("node-cron");
 const paymentService = require("../services/paymentService");
+const DangKy = require("../models/DangKy");
+const SinhVien = require("../models/SinhVien");
+const emailService = require("./email");
+const { Op } = require("sequelize");
 
 class PaymentCronJobs {
   /**
@@ -103,6 +107,120 @@ class PaymentCronJobs {
           });
         } catch (error) {
           console.error("❌ Statistics error:", error);
+        }
+      },
+      {
+        scheduled: true,
+        timezone: "Asia/Ho_Chi_Minh",
+      }
+    );
+
+    // Job 4: Nhắc nhở hợp đồng sắp hết hạn - chạy mỗi ngày lúc 7:00 AM
+    cron.schedule(
+      "0 7 * * *",
+      async () => {
+        console.log("🔔 Checking expiring contracts (DangKy)...");
+        try {
+          const today = new Date();
+          const sevenDaysLater = new Date();
+          sevenDaysLater.setDate(today.getDate() + 7);
+
+          // Lấy các hợp đồng sắp hết hạn trong 7 ngày tới, đã duyệt và còn ở
+          const expiringContracts = await DangKy.findAll({
+            where: {
+              NgayKetThucHopDong: {
+                [Op.gte]: today,
+                [Op.lte]: sevenDaysLater,
+              },
+              TrangThai: "DA_DUYET",
+            },
+            include: [
+              {
+                model: SinhVien,
+                as: "sinhVien",
+                attributes: ["HoTen", "Email"],
+              },
+            ],
+          });
+
+          for (const contract of expiringContracts) {
+            const sv = contract.sinhVien;
+            if (!sv?.Email) continue;
+            const subject = "[KTX STU] Hợp đồng ở ký túc xá sắp hết hạn";
+            const html = `<p>Chào ${sv.HoTen},</p>
+              <p>Hợp đồng ở ký túc xá của bạn sẽ hết hạn vào ngày <b>${contract.NgayKetThucHopDong}</b>.</p>
+              <p>Vui lòng truy cập hệ thống để gia hạn hợp đồng nếu bạn muốn tiếp tục ở lại.</p>
+              <p>Trân trọng,<br/>Phòng Quản lý Ký túc xá STU</p>`;
+            try {
+              await emailService.sendEmail({
+                to: sv.Email,
+                subject,
+                html,
+              });
+              console.log(`📧 Sent expiry reminder to ${sv.Email}`);
+            } catch (err) {
+              console.error(
+                `❌ Failed to send expiry reminder to ${sv.Email}:`,
+                err.message
+              );
+            }
+          }
+
+          // Tự động tạo hóa đơn nếu sinh viên không chủ động
+          // Lấy các hợp đồng đã hết hạn hôm nay, đã duyệt
+          const registrationService = require("../services/registrationService");
+          const expiredContracts = await DangKy.findAll({
+            where: {
+              NgayKetThucHopDong: today,
+              TrangThai: "DA_DUYET",
+            },
+            include: [
+              {
+                model: SinhVien,
+                as: "sinhVien",
+                attributes: ["HoTen", "Email"],
+              },
+            ],
+          });
+          for (const contract of expiredContracts) {
+            // Kiểm tra đã có đăng ký mới chưa (chưa chủ động gia hạn)
+            const countNew = await DangKy.count({
+              where: {
+                MaSinhVien: contract.MaSinhVien,
+                NgayDangKy: { [Op.gt]: contract.NgayKetThucHopDong },
+              },
+            });
+            if (countNew > 0) continue; // Đã chủ động gia hạn
+            // Tự động renew
+            const result = await registrationService.renewContract(
+              contract.MaSinhVien
+            );
+            if (result.success && contract.sinhVien?.Email) {
+              const subject =
+                "[KTX STU] Hệ thống đã tự động gia hạn hợp đồng và tạo hóa đơn mới";
+              const html = `<p>Chào ${contract.sinhVien.HoTen},</p>
+                <p>Hợp đồng ở ký túc xá của bạn đã được hệ thống tự động gia hạn cho kỳ tiếp theo.</p>
+                <p>Hóa đơn tiền phòng mới đã được tạo. Vui lòng đăng nhập để kiểm tra và thanh toán.</p>
+                <p>Trân trọng,<br/>Phòng Quản lý Ký túc xá STU</p>`;
+              try {
+                await emailService.sendEmail({
+                  to: contract.sinhVien.Email,
+                  subject,
+                  html,
+                });
+                console.log(
+                  `📧 Sent auto-renewal notice to ${contract.sinhVien.Email}`
+                );
+              } catch (err) {
+                console.error(
+                  `❌ Failed to send auto-renewal notice to ${contract.sinhVien.Email}:`,
+                  err.message
+                );
+              }
+            }
+          }
+        } catch (error) {
+          console.error("❌ Error checking expiring contracts:", error);
         }
       },
       {

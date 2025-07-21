@@ -381,6 +381,109 @@ class RegistrationService {
     }
   }
 
+  /**
+   * Gia hạn hợp đồng ở ký túc xá cho sinh viên
+   */
+  async renewContract(maSinhVien) {
+    const transaction = await sequelize.transaction();
+    try {
+      // 1. Tìm hợp đồng hiện tại của sinh viên (đang ở, đã duyệt, gần nhất)
+      const currentContract = await DangKy.findOne({
+        where: {
+          MaSinhVien: maSinhVien,
+          TrangThai: "DA_DUYET",
+        },
+        order: [["NgayKetThucHopDong", "DESC"]],
+        transaction,
+      });
+      if (!currentContract) {
+        await transaction.rollback();
+        return { success: false, message: "Không tìm thấy hợp đồng hiện tại." };
+      }
+      // 2. Kiểm tra hợp đồng sắp hết hạn (trong 7 ngày)
+      const today = new Date();
+      const endDate = new Date(currentContract.NgayKetThucHopDong);
+      const diffDays = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
+      if (diffDays > 7) {
+        await transaction.rollback();
+        return { success: false, message: "Hợp đồng chưa đến hạn gia hạn." };
+      }
+      // 3. Tính ngày bắt đầu/kết thúc quý mới
+      const newStartDate = new Date(currentContract.NgayKetThucHopDong);
+      newStartDate.setDate(newStartDate.getDate() + 1);
+      const newEndDate = calculateEndDate(newStartDate);
+      // 4. Lấy thông tin phòng
+      const maPhong = currentContract.MaPhong;
+      if (!maPhong) {
+        await transaction.rollback();
+        return { success: false, message: "Không xác định được phòng ở." };
+      }
+      const Phong = require("../models/Phong");
+      const room = await Phong.findByPk(maPhong, { transaction });
+      if (!room) {
+        await transaction.rollback();
+        return { success: false, message: "Không tìm thấy thông tin phòng." };
+      }
+      // 5. Tính tiền phòng quý mới
+      const registrationApprovalService = require("./registrationApprovalService");
+      const fee = registrationApprovalService.prototype.calculateRoomFee(
+        parseFloat(room.GiaThueThang),
+        newStartDate,
+        newEndDate
+      );
+      // 6. Tạo hóa đơn tiền phòng mới
+      const ThanhToan = require("../models/ThanhToan");
+      const thangNam = `${String(newStartDate.getMonth() + 1).padStart(
+        2,
+        "0"
+      )}/${newStartDate.getFullYear()}`;
+      await ThanhToan.create(
+        {
+          MaSinhVien: maSinhVien,
+          MaPhong: maPhong,
+          LoaiThanhToan: "TIEN_PHONG",
+          HinhThuc: "CHUYEN_KHOAN",
+          ThangNam: thangNam,
+          SoTien: fee.soTien,
+          TrangThai: "CHUA_THANH_TOAN",
+          NgayTao: new Date(),
+          NguoiTao: maSinhVien,
+        },
+        { transaction }
+      );
+      // 7. (Tùy chọn) Tạo bản ghi đăng ký mới hoặc cập nhật hợp đồng hiện tại
+      // Ở đây: tạo bản ghi DangKy mới cho kỳ mới
+      await DangKy.create(
+        {
+          MaSinhVien: maSinhVien,
+          MaPhong: maPhong,
+          NgayDangKy: new Date(),
+          NgayNhanPhong: newStartDate,
+          NgayKetThucHopDong: newEndDate,
+          TrangThai: "CHO_DUYET",
+          NgayTao: new Date(),
+          NguoiTao: maSinhVien,
+        },
+        { transaction }
+      );
+      await transaction.commit();
+      return {
+        success: true,
+        message:
+          "Gia hạn hợp đồng thành công. Đã tạo hóa đơn tiền phòng cho kỳ mới.",
+        data: {
+          newStartDate,
+          newEndDate,
+          soTien: fee.soTien,
+        },
+      };
+    } catch (error) {
+      await transaction.rollback();
+      console.error("Lỗi gia hạn hợp đồng:", error);
+      return { success: false, message: "Có lỗi xảy ra khi gia hạn hợp đồng." };
+    }
+  }
+
   // Helper methods
   async generateMaSinhVien(transaction) {
     const currentYear = new Date().getFullYear();

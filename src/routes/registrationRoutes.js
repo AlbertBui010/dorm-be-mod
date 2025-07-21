@@ -107,4 +107,12 @@ router.post(
   registrationController.calculateEndDate
 );
 
+/**
+ * @route   POST /api/registration/renew
+ * @desc    Gia hạn hợp đồng ở ký túc xá
+ * @access  Private (cần xác thực)
+ * @body    { maSinhVien? } (nếu không có req.user)
+ */
+router.post("/renew", registrationController.renewContract);
+
 module.exports = router;
