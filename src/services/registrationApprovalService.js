@@ -6,9 +6,8 @@ const Phong = require("../models/Phong");
 const Giuong = require("../models/Giuong");
 const LichSuOPhong = require("../models/LichSuOPhong");
 const ThanhToan = require("../models/ThanhToan");
-const DonGiaDienNuoc = require("../models/DonGiaDienNuoc");
 const emailService = require("../utils/email");
-const dateCalculator = require("../utils/dateCalculator");
+const { PHONG_STATUS } = require("../constants/phong");
 
 class RegistrationApprovalService {
   /**
@@ -354,7 +353,7 @@ class RegistrationApprovalService {
       const { count, rows } = await Phong.findAndCountAll({
         where: {
           LoaiPhong: gioiTinh === "Nam" ? "Nam" : "Nữ",
-          TrangThai: "Hoạt động",
+          TrangThai: PHONG_STATUS.HOAT_DONG,
         },
         include: [
           {

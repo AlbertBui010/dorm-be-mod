@@ -13,40 +13,43 @@ const router = express.Router();
 // All routes require authentication
 router.use(authenticate);
 
-// GET /api/phong - Get all rooms
-router.get("/", PhongController.getAllPhong);
+// Routes
+router.get(
+  "/",
+  authorize(["QuanTriVien", "NhanVien"]),
+  PhongController.getAllPhong
+);
 
 // GET /api/phong/available - Get available rooms
 router.get("/available", PhongController.getAvailableRooms);
 
-// GET /api/phong/statistics - Get room statistics (QuanTriVien/QuanLy only)
+// GET /api/phong/statistics - Get room statistics
 router.get(
   "/statistics",
-  authorize("QuanTriVien", "QuanLy"),
+  authorize(["QuanTriVien,NhanVien"]),
   PhongController.getRoomStatistics
 );
 
-// GET /api/phong/:maPhong - Get room by ID
 router.get(
   "/:maPhong",
   phongParamValidator,
   handleValidationErrors,
+  authorize(["QuanTriVien", "NhanVien"]),
   PhongController.getPhongById
 );
 
-// POST /api/phong - Create new room (QuanTriVien/QuanLy only)
 router.post(
   "/",
-  authorize("QuanTriVien", "QuanLy"),
+  authorize(["QuanTriVien", "NhanVien"]),
   createPhongValidator,
   handleValidationErrors,
   PhongController.createPhong
 );
 
-// PUT /api/phong/:maPhong - Update room (QuanTriVien/QuanLy only)
 router.put(
   "/:maPhong",
-  authorize("QuanTriVien", "QuanLy"),
+  authorize("QuanTriVien"),
+  phongParamValidator,
   updatePhongValidator,
   handleValidationErrors,
   PhongController.updatePhong

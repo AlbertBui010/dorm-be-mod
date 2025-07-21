@@ -25,6 +25,7 @@ const YeuCauChuyenPhong = sequelize.define(
       type: DataTypes.DATEONLY,
       allowNull: true,
     },
+
     MaPhongMoi: {
       type: DataTypes.INTEGER,
       allowNull: true,

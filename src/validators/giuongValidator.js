@@ -26,23 +26,6 @@ const createGiuongValidator = [
     .withMessage("Số giường không được để trống")
     .isLength({ min: 1, max: 10 })
     .withMessage("Số giường phải từ 1-10 ký tự"),
-
-  body("ViTri")
-    .optional()
-    .isLength({ max: 50 })
-    .withMessage("Vị trí không được vượt quá 50 ký tự"),
-
-  body("TrangThai")
-    .optional()
-    .isIn(["Hoạt động", "Không hoạt động", "Bảo trì"])
-    .withMessage(
-      "Trạng thái phải là một trong: Hoạt động, Không hoạt động, Bảo trì"
-    ),
-
-  body("GhiChu")
-    .optional()
-    .isLength({ max: 255 })
-    .withMessage("Ghi chú không được vượt quá 255 ký tự"),
 ];
 
 // Validation for updating a bed
@@ -62,23 +45,6 @@ const updateGiuongValidator = [
     .optional()
     .isLength({ min: 1, max: 10 })
     .withMessage("Số giường phải từ 1-10 ký tự"),
-
-  body("ViTri")
-    .optional()
-    .isLength({ max: 50 })
-    .withMessage("Vị trí không được vượt quá 50 ký tự"),
-
-  body("TrangThai")
-    .optional()
-    .isIn(["Hoạt động", "Không hoạt động", "Bảo trì"])
-    .withMessage(
-      "Trạng thái phải là một trong: Hoạt động, Không hoạt động, Bảo trì"
-    ),
-
-  body("GhiChu")
-    .optional()
-    .isLength({ max: 255 })
-    .withMessage("Ghi chú không được vượt quá 255 ký tự"),
 ];
 
 // Validation for getting a bed by ID

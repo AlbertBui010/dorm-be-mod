@@ -299,7 +299,7 @@ class EmailService {
             <p><strong>🏢 Phòng Quản lý Ký túc xá</strong><br>
             Trường Đại học Công Nghệ Sài Gòn<br>
             📧 Email: ktx@stu.edu.vn | ☎️ Hotline: 0929812000<br>
-            🏠 Địa chỉ: 1 Võ Văn Ngân, Thủ Đức, TP.HCM</p>
+            🏠 Địa chỉ: 180 Cao Lỗ, Phường 4, Quận 8, TP HCM</p>
             
             <p>Cảm ơn bạn đã tin tướng và lựa chọn ký túc xá của chúng tôi!</p>
           </div>
@@ -488,7 +488,7 @@ class EmailService {
               <ul style="margin: 10px 0 0 0; color: #1e40af;">
                 <li>Hotline: 0929812000</li>
                 <li>Email: ktx@stu.edu.vn</li>
-                <li>Địa chỉ: 1 Võ Văn Ngân, Thủ Đức, TP.HCM</li>
+                <li>Địa chỉ: 180 Cao Lỗ, Phường 4, Quận 8, TP HCM</li>
                 <li>Giờ làm việc: 8:00 - 17:00 (Thứ 2 - Thứ 6)</li>
               </ul>
             </div>

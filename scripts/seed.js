@@ -34,22 +34,22 @@ const seedData = async () => {
         NguoiCapNhat: "SYSTEM",
       },
       {
-        TenDangNhap: "manager1",
-        MatKhau: hashedPassword,
-        HoTen: "Trần Thị Quản Lý",
-        Email: "manager1@stu.edu.vn",
-        SoDienThoai: "0987654321",
-        VaiTro: "QuanLy",
-        TrangThai: "HoatDong",
-        NguoiTao: "SYSTEM",
-        NguoiCapNhat: "SYSTEM",
-      },
-      {
         TenDangNhap: "staff1",
         MatKhau: hashedPassword,
         HoTen: "Lê Văn Nhân Viên",
         Email: "staff1@stu.edu.vn",
         SoDienThoai: "0369852147",
+        VaiTro: "NhanVien",
+        TrangThai: "HoatDong",
+        NguoiTao: "SYSTEM",
+        NguoiCapNhat: "SYSTEM",
+      },
+      {
+        TenDangNhap: "staff2",
+        MatKhau: hashedPassword,
+        HoTen: "Trần Thị Nhân Viên",
+        Email: "staff2@stu.edu.vn",
+        SoDienThoai: "0369852148",
         VaiTro: "NhanVien",
         TrangThai: "HoatDong",
         NguoiTao: "SYSTEM",
@@ -142,13 +142,13 @@ const seedData = async () => {
     console.log("=====================================");
     console.log("\n👥 NHÂN VIÊN (Employees):");
     console.log(
-      "• Username: admin | Email: admin@stu.edu.vn | Role: QuanTriVien"
+      "• Username: admin | Email: admin@stu.edu.vn | Role: QuanTriVien (Full access + Employee management)"
     );
     console.log(
-      "• Username: manager1 | Email: manager1@stu.edu.vn | Role: QuanLy"
+      "• Username: staff1 | Email: staff1@stu.edu.vn | Role: NhanVien (Full access except employee management)"
     );
     console.log(
-      "• Username: staff1 | Email: staff1@stu.edu.vn | Role: NhanVien"
+      "• Username: staff2 | Email: staff2@stu.edu.vn | Role: NhanVien (Full access except employee management)"
     );
 
     console.log("\n🎓 SINH VIÊN (Students):");
@@ -169,6 +169,10 @@ const seedData = async () => {
     console.log("• Nhân viên: Use username OR email + password");
     console.log("• Sinh viên: Use email + password (must be verified)");
     console.log("• SV004 cannot login (EmailDaXacThuc = false)");
+    console.log("\n�� PERMISSION CHANGES:");
+    console.log("• QuanTriVien: Full access + Employee management");
+    console.log("• NhanVien: Full access except employee management");
+    console.log("• Removed QuanLy role");
   } catch (error) {
     console.error("❌ Seeding failed:", error);
   } finally {

@@ -245,7 +245,6 @@ class NhanVienService {
   async getRoles() {
     return [
       { value: "QuanTriVien", label: "Quản trị viên" },
-      { value: "QuanLy", label: "Quản lý" },
       { value: "NhanVien", label: "Nhân viên" },
     ];
   }

@@ -1,6 +1,7 @@
 const { Phong, Giuong, SinhVien } = require("../models");
 const { Op } = require("sequelize");
 const sequelize = require("../config/database");
+const { PHONG_STATUS } = require("../constants/phong");
 
 class PhongService {
   async getAllPhong(filters = {}, pagination = {}) {
@@ -111,7 +112,7 @@ class PhongService {
     const phong = await Phong.create({
       ...phongData,
       SoLuongHienTai: 0, // Initially empty
-      TrangThai: phongData.TrangThai || "Hoạt động",
+      TrangThai: phongData.TrangThai || PHONG_STATUS.HOAT_DONG,
       NgayTao: new Date(),
       NguoiTao: createdBy,
     });
@@ -261,7 +262,7 @@ class PhongService {
     const phongs = await Phong.findAll({
       where: {
         [Op.where]: sequelize.literal('"SoLuongHienTai" < "SucChua"'),
-        TrangThai: "Hoạt động",
+        TrangThai: PHONG_STATUS.HOAT_DONG,
       },
       include: [
         {

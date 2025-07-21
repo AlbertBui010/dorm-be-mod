@@ -54,9 +54,12 @@ class ChiSoDienNuocController {
 
   async getList(req, res, next) {
     try {
-      const filter = {};
-      if (req.query.MaPhong) filter.MaPhong = req.query.MaPhong;
-      if (req.query.ThangNam) filter.ThangNam = req.query.ThangNam;
+      const { page, limit, search } = req.query;
+      const filter = {
+        page: parseInt(page) || 1,
+        limit: parseInt(limit) || 10,
+        search: search || "",
+      };
       const result = await chiSoDienNuocService.getList(filter);
       return successResponse(
         res,

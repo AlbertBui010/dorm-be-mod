@@ -74,7 +74,7 @@ router.put(
   giuongController.updateGiuong
 );
 
-// Route: DELETE /api/giuong/:maGiuong - Delete bed
+// Route: DELETE /api/giuong/:maGiuong - Delete bed (QuanTriVien only)
 router.delete(
   "/:maGiuong",
   authenticate,
