@@ -92,7 +92,7 @@ class RegistrationService {
           Email: email,
           EmailDaXacThuc: false,
           MaXacThucEmail: maXacThucEmail,
-          TrangThai: "HoatDong",
+          TrangThai: "DANG_KY",
           NgayTao: new Date(),
           NguoiTao: "SYSTEM",
         },
