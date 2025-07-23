@@ -1,6 +1,5 @@
 const SinhVienService = require("../services/sinhVienService");
 const { successResponse, paginationResponse } = require("../utils/response");
-
 class SinhVienController {
   async getAllSinhVien(req, res, next) {
     try {
@@ -146,6 +145,26 @@ class SinhVienController {
       next(error);
     }
   }
+  async checkIn(req, res, next) {
+    try {
+      const {maSinhVien} = req.params;
+      const updatedBy = req.user?.TenDangNhap || "system";
+      const result = await SinhVienService.studentCheckIn(maSinhVien, updatedBy);
+      return successResponse(res, result?.toJSON ? result.toJSON() : result, "sinh viên đã nhận phòng");
+    } catch (error) {
+      next(error);
+    }
+  }
+  async checkOut(req, res, next) {
+    try {
+      const {maSinhVien} = req.params;
+      const updatedBy = req.user?.TenDangNhap || "system";
+      const result = await SinhVienService.studentCheckOut(maSinhVien, updatedBy);
+      return successResponse(res, result, "sinh viên đã thôi ở ký túc xá");
+    } catch (error) {
+      next(error);
+    }
+  } 
 }
 
 module.exports = new SinhVienController();

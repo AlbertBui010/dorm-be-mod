@@ -1,0 +1,9 @@
+const STUDENT_ROOM_HISTORY = {
+    DANG_KY: "DANG_KY",
+    CHO_NHAN_PHONG: "CHO_NHAN_PHONG",
+    DANG_O: "DANG_O",
+    NGUNG_O: "NGUNG_O",
+    VI_PHAM: "VI_PHAM",
+};
+
+module.exports = { STUDENT_ROOM_HISTORY };

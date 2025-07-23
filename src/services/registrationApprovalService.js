@@ -9,7 +9,9 @@ const ThanhToan = require("../models/ThanhToan");
 const emailService = require("../utils/email");
 const { PHONG_STATUS } = require("../constants/phong");
 const { GIUONG_STATUS } = require("../constants/giuong");
-
+const { REGISTRATION_STATUS } = require("../constants/dangky");
+const { STUDENT_STATUS } = require("../constants/sinhvien");
+const { STUDENT_ROOM_HISTORY } = require("../constants/LichSuOPhong");
 class RegistrationApprovalService {
   /**
    * Tính toán số tiền phòng theo quy tắc mới
@@ -88,7 +90,7 @@ class RegistrationApprovalService {
           whereConditions.TrangThai = trangThai;
         }
       } else {
-        whereConditions.TrangThai = "CHO_DUYET";
+        whereConditions.TrangThai = REGISTRATION_STATUS.CHO_DUYET;
       }
 
       // Điều kiện tìm kiếm cho SinhVien
@@ -192,9 +194,9 @@ class RegistrationApprovalService {
         genderStats,
         nguyenVongStats,
       ] = await Promise.all([
-        DangKy.count({ where: { TrangThai: "CHO_DUYET" } }),
-        DangKy.count({ where: { TrangThai: "DA_DUYET" } }),
-        DangKy.count({ where: { TrangThai: "TU_CHOI" } }),
+        DangKy.count({ where: { TrangThai: REGISTRATION_STATUS.CHO_DUYET } }),
+        DangKy.count({ where: { TrangThai: REGISTRATION_STATUS.DA_DUYET } }),
+        DangKy.count({ where: { TrangThai: REGISTRATION_STATUS.DA_TU_CHOI } }),
         // Gender stats từ SinhVien join với DangKy
         sequelize.query(
           `
@@ -207,7 +209,7 @@ class RegistrationApprovalService {
           { type: sequelize.QueryTypes.SELECT }
         ),
         DangKy.findAll({
-          where: { TrangThai: "CHO_DUYET" },
+          where: { TrangThai: REGISTRATION_STATUS.CHO_DUYET },
           attributes: [
             "NguyenVong",
             [sequelize.fn("COUNT", sequelize.col("MaDangKy")), "count"],
@@ -279,7 +281,10 @@ class RegistrationApprovalService {
 
       let soPhong = null,
         soGiuong = null;
-      if (registration.TrangThai === "DA_DUYET" && registration.sinhVien) {
+      if (
+        registration.TrangThai === REGISTRATION_STATUS.DA_DUYET &&
+        registration.sinhVien
+      ) {
         // Tìm giường của sinh viên này
         const giuong = await Giuong.findOne({
           where: { MaSinhVienChiEm: registration.MaSinhVien },
@@ -475,7 +480,7 @@ class RegistrationApprovalService {
         };
       }
 
-      if (registration.TrangThai !== "CHO_DUYET") {
+      if (registration.TrangThai !== REGISTRATION_STATUS.CHO_DUYET) {
         await transaction.rollback();
         return {
           success: false,
@@ -518,7 +523,7 @@ class RegistrationApprovalService {
           MaPhong: maPhong,
           MaGiuong: maGiuong,
           NgayVao: registration.NgayNhanPhong,
-          TrangThai: "DANG_O",
+          TrangThai: STUDENT_STATUS.CHO_NHAN_PHONG,
           NgayCapNhat: new Date(),
           NguoiCapNhat: nguoiDuyet,
         },
@@ -553,7 +558,7 @@ class RegistrationApprovalService {
           MaSinhVien: registration.MaSinhVien,
           MaPhong: maPhong,
           NgayVao: registration.NgayNhanPhong,
-          TrangThai: "DANG_O",
+          TrangThai: STUDENT_ROOM_HISTORY.CHO_NHAN_PHONG,
           NgayTao: new Date(),
           NguoiTao: nguoiDuyet,
         },
@@ -598,7 +603,7 @@ class RegistrationApprovalService {
       // 8. Cập nhật trạng thái đăng ký
       await registration.update(
         {
-          TrangThai: "DA_DUYET",
+          TrangThai: REGISTRATION_STATUS.DA_DUYET,
           NgayTao: new Date(),
           NguoiTao: nguoiDuyet,
         },
@@ -671,7 +676,7 @@ class RegistrationApprovalService {
         };
       }
 
-      if (registration.TrangThai !== "CHO_DUYET") {
+      if (registration.TrangThai !== REGISTRATION_STATUS.CHO_DUYET) {
         await transaction.rollback();
         return {
           success: false,
@@ -682,7 +687,7 @@ class RegistrationApprovalService {
       // 2. Cập nhật trạng thái đăng ký
       await registration.update(
         {
-          TrangThai: "TU_CHOI",
+          TrangThai: REGISTRATION_STATUS.DA_TU_CHOI,
           NgayTao: new Date(),
           NguoiTao: nguoiDuyet,
         },
