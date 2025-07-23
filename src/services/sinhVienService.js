@@ -1,6 +1,9 @@
 const { SinhVien, sequelize } = require("../models");
 const { hashPassword } = require("../utils/auth");
 const { Op } = require("sequelize");
+const { STUDENT_STATUS } = require("../constants/sinhvien");
+const LichSuOPhong = require("../models/LichSuOPhong");
+const { STUDENT_ROOM_HISTORY } = require("../constants/LichSuOPhong");
 
 class SinhVienService {
   async getAllSinhVien(filters = {}, pagination = {}) {
@@ -49,7 +52,7 @@ class SinhVienService {
       attributes: { exclude: ["MatKhau", "MaXacThucEmail"] },
       include: [
         { association: "Giuong" },
-        { association: "DangKys" },
+        { association: "dangKys" },
         { association: "LichSuOPhongs" },
       ],
     });
@@ -280,7 +283,7 @@ class SinhVienService {
 
     // Toggle status (assuming we add a TrangThai field)
     const newStatus =
-      sinhVien.TrangThai === "HoatDong" ? "KhongHoatDong" : "HoatDong";
+      sinhVien.TrangThai === STUDENT_STATUS.DANG_O ? STUDENT_STATUS.NGUNG_O : STUDENT_STATUS.DANG_O;
 
     await sinhVien.update({
       TrangThai: newStatus,
@@ -295,11 +298,11 @@ class SinhVienService {
     const totalStudents = await SinhVien.count();
 
     const activeStudents = await SinhVien.count({
-      where: { TrangThai: "HoatDong" },
+      where: { TrangThai: STUDENT_STATUS.DANG_O },
     });
 
     const inactiveStudents = await SinhVien.count({
-      where: { TrangThai: "KhongHoatDong" },
+      where: { TrangThai: STUDENT_STATUS.NGUNG_O },
     });
 
     const verifiedEmails = await SinhVien.count({
@@ -313,6 +316,72 @@ class SinhVienService {
       verified: verifiedEmails,
     };
   }
+
+  // async studentCheckIn(maSinhVien, updatedBy) {
+  //   const sinhVien = await SinhVien.findByPk(maSinhVien);
+
+  //   if (!sinhVien) {
+  //     throw new Error("Sinh viên không tồn tại");
+  //   }
+
+  //   // Check if student is already checked in
+  //   if (sinhVien.TrangThai === STUDENT_STATUS.DANG_O) {
+  //     throw new Error("Sinh viên đã đang ở trong ký túc xá");
+  //   }
+
+  //   // Update status to DANG_O
+  //   await sinhVien.update({
+  //     TrangThai: STUDENT_STATUS.DANG_O,
+  //     NgayCapNhat: new Date(),
+  //     NguoiCapNhat: updatedBy,
+  //   });
+
+  //   return await this.getSinhVienById(maSinhVien);
+  // }
+  async studentCheckIn(maSinhVien, updatedBy) {
+    const sinhvien = await SinhVien.findByPk(maSinhVien);
+    const transaction = await sequelize.transaction();
+
+    if (!sinhvien) {
+      throw new Error("Sinh viên không tồn tại");
+    }
+    if (sinhvien.TrangThai === STUDENT_STATUS.DANG_O) {
+      throw new Error("Sinh viên đã đang ở trong ký túc xá");
+    }
+    if (sinhvien.TrangThai !== STUDENT_STATUS.CHO_NHAN_PHONG) {
+      throw new Error("Sinh viên không đủ điều kiện để nhận phòng");
+    }
+    await sinhvien.update({
+      TrangThai: STUDENT_STATUS.DANG_O,
+      NgayCapNhat: new Date(),
+      NguoiCapNhat: updatedBy,
+    });
+
+    return await this.getSinhVienById(maSinhVien);
+  }
+  async studentCheckOut(maSinhVien, updatedBy) {
+    const sinhVien = await SinhVien.findByPk(maSinhVien);
+    if (!sinhVien) {
+      throw new Error("Sinh viên không tồn tại");
+    }
+
+    // Check if student is already checked out
+    if (sinhVien.TrangThai !== STUDENT_STATUS.DANG_O) {
+      throw new Error("Sinh viên không đang ở trong ký túc xá");
+    }
+
+    // Update status to NGUNG_O
+    await sinhVien.update({
+      TrangThai: STUDENT_STATUS.NGUNG_O,
+      NgayCapNhat: new Date(),
+      NguoiCapNhat: updatedBy,
+    });
+
+    
+
+    return await this.getSinhVienById(maSinhVien);
+  }
 }
+
 
 module.exports = new SinhVienService();

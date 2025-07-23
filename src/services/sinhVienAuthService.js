@@ -5,7 +5,7 @@ const {
   generateToken,
 } = require("../utils/auth");
 const { Op } = require("sequelize");
-
+const  { REGISTRATION_STATUS } = require("../constants/dangky");
 class SinhVienAuthService {
   async login(credentials) {
     const { email, password } = credentials;
@@ -108,7 +108,7 @@ class SinhVienAuthService {
         {
           association: "dangKys",
           where: {
-            TrangThai: { [Op.in]: ["CHO_DUYET", "DA_DUYET", "DANG_O"] },
+            TrangThai: { [Op.in]: [REGISTRATION_STATUS.CHO_DUYET, REGISTRATION_STATUS.DA_DUYET, "DANG_O"] },
           },
           required: false,
           include: [{ association: "Phong" }, { association: "Giuong" }],

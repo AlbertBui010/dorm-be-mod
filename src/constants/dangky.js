@@ -1,0 +1,9 @@
+const REGISTRATION_STATUS = {
+    DANG_KY:"DANG_KY",
+    CHO_DUYET:"CHO_DUYET",
+    DA_DUYET:"DA_DUYET",
+    DA_TU_CHOI:"TU_CHOI",
+
+};
+
+module.exports = { REGISTRATION_STATUS };
