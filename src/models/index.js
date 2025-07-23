@@ -27,7 +27,7 @@ SinhVien.hasMany(DangKy, { foreignKey: "MaSinhVien", as: "dangKys" });
 DangKy.belongsTo(SinhVien, { foreignKey: "MaSinhVien", as: "sinhVien" });
 
 // Thêm association ngược cho SinhVien để có thể lấy đăng ký hiện tại
-SinhVien.hasOne(DangKy, { foreignKey: "MaSinhVien", as: "dangKy" });
+SinhVien.hasOne(DangKy, { foreignKey: "MaSinhVien", as: "dangKyS" });
 
 // Phong - DangKy (One to Many)
 Phong.hasMany(DangKy, { foreignKey: "MaPhong", as: "DangKys" });

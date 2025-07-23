@@ -2,6 +2,8 @@ const { SinhVien, DangKy, sequelize } = require("../models");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const { sendEmail } = require("../utils/email");
+const { REGISTRATION_STATUS } = require("../constants/dangky");
+const { STUDENT_STATUS } = require("../constants/sinhvien");
 const {
   calculateEndDate,
   validateReceiveDate,
@@ -92,7 +94,7 @@ class RegistrationService {
           Email: email,
           EmailDaXacThuc: false,
           MaXacThucEmail: maXacThucEmail,
-          TrangThai: "DANG_KY",
+          TrangThai: STUDENT_STATUS.DANG_KY,
           NgayTao: new Date(),
           NguoiTao: "SYSTEM",
         },
@@ -127,7 +129,7 @@ class RegistrationService {
           NgayNhanPhong: ngayNhanPhong ? new Date(ngayNhanPhong) : null,
           NgayKetThucHopDong: ngayKetThucHopDong,
           NguyenVong: nguyenVong || null,
-          TrangThai: "CHO_DUYET",
+          TrangThai: REGISTRATION_STATUS.CHO_DUYET,
           NgayTao: new Date(),
           NguoiTao: "SYSTEM",
         },
@@ -391,7 +393,7 @@ class RegistrationService {
       const currentContract = await DangKy.findOne({
         where: {
           MaSinhVien: maSinhVien,
-          TrangThai: "DA_DUYET",
+          TrangThai: REGISTRATION_STATUS.DA_DUYET,
         },
         order: [["NgayKetThucHopDong", "DESC"]],
         transaction,
@@ -460,7 +462,7 @@ class RegistrationService {
           NgayDangKy: new Date(),
           NgayNhanPhong: newStartDate,
           NgayKetThucHopDong: newEndDate,
-          TrangThai: "CHO_DUYET",
+          TrangThai: REGISTRATION_STATUS.CHO_DUYET,
           NgayTao: new Date(),
           NguoiTao: maSinhVien,
         },

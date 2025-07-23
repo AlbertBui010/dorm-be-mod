@@ -74,5 +74,15 @@ router.delete(
   authorizeEmployee("QuanTriVien"),
   SinhVienController.deleteSinhVien
 );
+router.put(
+  "/:maSinhVien/check-in",
+  authorizeEmployee("QuanTriVien", "NhanVien"),
+  SinhVienController.checkIn
+);
+router.put(
+  "/:maSinhVien/check-out",
+  authorizeEmployee("QuanTriVien", "NhanVien"),
+  SinhVienController.checkOut
+);
 
 module.exports = router;
