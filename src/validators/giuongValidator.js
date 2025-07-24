@@ -13,7 +13,6 @@ const isMaSinhVienFormat = (value) => {
   return /^SV\d{3}$/.test(value);
 };
 
-// Validation for creating a new bed
 const createGiuongValidator = [
   body("MaPhong")
     .notEmpty()
@@ -26,25 +25,23 @@ const createGiuongValidator = [
     .withMessage("Số giường không được để trống")
     .isLength({ min: 1, max: 10 })
     .withMessage("Số giường phải từ 1-10 ký tự"),
+
+  body("TrangThai")
+    .optional()
+    .isIn(["HOAT_DONG", "BAO_TRI", "NGUNG_HOAT_DONG"])
+    .withMessage(
+      "Trạng thái phải là một trong: HOAT_DONG, BAO_TRI, NGUNG_HOAT_DONG"
+    ),
 ];
 
-// Validation for updating a bed
 const updateGiuongValidator = [
-  param("maGiuong")
+  param("TrangThai")
     .notEmpty()
-    .withMessage("Mã giường không được để trống")
-    .isInt({ min: 1 })
-    .withMessage("Mã giường phải là số nguyên dương"),
-
-  body("MaPhong")
-    .optional()
-    .isInt({ min: 1 })
-    .withMessage("Mã phòng phải là số nguyên dương"),
-
-  body("SoGiuong")
-    .optional()
-    .isLength({ min: 1, max: 10 })
-    .withMessage("Số giường phải từ 1-10 ký tự"),
+    .withMessage("Trạng thái không được để trống")
+    .isIn(["HOAT_DONG", "BAO_TRI", "NGUNG_HOAT_DONG"])
+    .withMessage(
+      "Trạng thái phải là một trong: HOAT_DONG, BAO_TRI, NGUNG_HOAT_DONG"
+    ),
 ];
 
 // Validation for getting a bed by ID

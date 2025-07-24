@@ -5,6 +5,7 @@ const SinhVien = require("../models/SinhVien");
 const Phong = require("../models/Phong");
 const payos = require("../utils/payos");
 const crypto = require("crypto");
+const { PAYMENT_METHOD, PAYMENT_STATUS } = require("../constants/payment");
 
 class PaymentService {
   /**
@@ -269,15 +270,15 @@ class PaymentService {
       // Cập nhật trạng thái chờ xác nhận tiền mặt
       await payment.update(
         {
-          HinhThuc: "TIEN_MAT",
-          TrangThai: "CHO_XAC_NHAN_TIEN_MAT",
+          HinhThuc: PAYMENT_METHOD.TIEN_MAT,
+          TrangThai: PAYMENT_STATUS.CHO_XAC_NHAN,
           NgayCapNhat: new Date(),
         },
         { transaction }
       );
 
       await transaction.commit();
-      Hãy;
+
       return {
         success: true,
         data: payment,
@@ -752,7 +753,7 @@ class PaymentService {
         };
       }
 
-      if (payment.TrangThai !== "CHO_XAC_NHAN_TIEN_MAT") {
+      if (payment.TrangThai !== PAYMENT_STATUS.CHO_XAC_NHAN) {
         await transaction.rollback();
         return {
           success: false,
@@ -763,8 +764,8 @@ class PaymentService {
       // Update payment status
       await payment.update(
         {
-          TrangThai: "DA_THANH_TOAN",
-          HinhThuc: "TIEN_MAT",
+          TrangThai: PAYMENT_STATUS.DA_THANH_TOAN,
+          HinhThuc: PAYMENT_METHOD.TIEN_MAT,
           NgayThanhToan: new Date(),
           MoTa: note
             ? `${payment.MoTa || ""}\nGhi chú phê duyệt: ${note}`
@@ -811,7 +812,7 @@ class PaymentService {
         };
       }
 
-      if (payment.TrangThai !== "CHO_XAC_NHAN_TIEN_MAT") {
+      if (payment.TrangThai !== PAYMENT_STATUS.CHO_XAC_NHAN) {
         await transaction.rollback();
         return {
           success: false,
@@ -822,7 +823,7 @@ class PaymentService {
       // Update payment status back to unpaid
       await payment.update(
         {
-          TrangThai: "CHUA_THANH_TOAN",
+          TrangThai: PAYMENT_STATUS.CHUA_THANH_TOAN,
           HinhThuc: null,
           MoTa: reason
             ? `${payment.MoTa || ""}\nLý do từ chối: ${reason}`

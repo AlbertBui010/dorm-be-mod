@@ -1,6 +1,7 @@
 const { verifyToken } = require("../utils/auth");
 const { errorResponse } = require("../utils/response");
 const { NhanVien, SinhVien } = require("../models");
+const { NHAN_VIEN_TRANG_THAI } = require("../constants/nhanVien");
 
 const authenticate = async (req, res, next) => {
   try {
@@ -26,7 +27,7 @@ const authenticate = async (req, res, next) => {
         user = await NhanVien.findOne({
           where: {
             MaNhanVien: decoded.MaNhanVien,
-            TrangThai: "HoatDong",
+            TrangThai: NHAN_VIEN_TRANG_THAI.HOAT_DONG,
           },
           attributes: { exclude: ["MatKhau"] },
         });

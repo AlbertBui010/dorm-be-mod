@@ -1,4 +1,5 @@
 const { body } = require("express-validator");
+const { STUDENT_STATUS } = require("../constants/sinhvien");
 
 const createSinhVienValidation = [
   body("MaSinhVien")
@@ -42,8 +43,17 @@ const createSinhVienValidation = [
 
   body("TrangThai")
     .optional()
-    .isIn(["HoatDong", "KhongHoatDong"])
-    .withMessage("Trạng thái phải là HoatDong hoặc KhongHoatDong"),
+    .isIn([
+      STUDENT_STATUS.DANG_KY,
+      STUDENT_STATUS.NGUNG_O,
+      STUDENT_STATUS.DANG_O,
+      STUDENT_STATUS.VI_PHAM,
+      STUDENT_STATUS.CHO_NHAN_PHONG,
+      STUDENT_STATUS.KHONG_NHAN_PHONG,
+    ])
+    .withMessage(
+      "Trạng thái phải là DANG_KY hoặc NGUNG_O hoặc DANG_O hoặc VI_PHAM hoặc CHO_NHAN_PHONG hoặc KHONG_NHAN_PHONG"
+    ),
 ];
 
 const updateSinhVienValidation = [
@@ -88,8 +98,17 @@ const updateSinhVienValidation = [
 
   body("TrangThai")
     .optional()
-    .isIn(["HoatDong", "KhongHoatDong"])
-    .withMessage("Trạng thái phải là HoatDong hoặc KhongHoatDong"),
+    .isIn([
+      STUDENT_STATUS.DANG_KY,
+      STUDENT_STATUS.NGUNG_O,
+      STUDENT_STATUS.DANG_O,
+      STUDENT_STATUS.VI_PHAM,
+      STUDENT_STATUS.CHO_NHAN_PHONG,
+      STUDENT_STATUS.KHONG_NHAN_PHONG,
+    ])
+    .withMessage(
+      "Trạng thái phải là DANG_KY hoặc NGUNG_O hoặc DANG_O hoặc VI_PHAM hoặc CHO_NHAN_PHONG hoặc KHONG_NHAN_PHONG"
+    ),
 ];
 
 module.exports = {

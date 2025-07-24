@@ -6,6 +6,7 @@ const {
 } = require("../utils/auth");
 const SinhVienAuthService = require("./sinhVienAuthService");
 const { Op } = require("sequelize");
+const { NHAN_VIEN_TRANG_THAI } = require("../constants/nhanVien");
 
 class AuthService {
   // Handles both employees and students
@@ -42,7 +43,7 @@ class AuthService {
     } else {
       whereClause.TenDangNhap = username;
     }
-    whereClause.TrangThai = "HoatDong";
+    whereClause.TrangThai = NHAN_VIEN_TRANG_THAI.HOAT_DONG;
 
     const user = await NhanVien.findOne({ where: whereClause });
 

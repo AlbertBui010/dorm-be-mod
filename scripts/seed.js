@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const { sequelize } = require("../src/models");
 const NhanVien = require("../src/models/NhanVien");
 const SinhVien = require("../src/models/SinhVien");
+const { NHAN_VIEN_TRANG_THAI } = require("../src/constants/nhanVien");
 
 const seedData = async () => {
   try {
@@ -29,7 +30,7 @@ const seedData = async () => {
         Email: "admin@stu.edu.vn",
         SoDienThoai: "0123456789",
         VaiTro: "QuanTriVien",
-        TrangThai: "HoatDong",
+        TrangThai: NHAN_VIEN_TRANG_THAI.HOAT_DONG,
         NguoiTao: "SYSTEM",
         NguoiCapNhat: "SYSTEM",
       },
@@ -40,7 +41,7 @@ const seedData = async () => {
         Email: "staff1@stu.edu.vn",
         SoDienThoai: "0369852147",
         VaiTro: "NhanVien",
-        TrangThai: "HoatDong",
+        TrangThai: NHAN_VIEN_TRANG_THAI.HOAT_DONG,
         NguoiTao: "SYSTEM",
         NguoiCapNhat: "SYSTEM",
       },
@@ -51,7 +52,7 @@ const seedData = async () => {
         Email: "staff2@stu.edu.vn",
         SoDienThoai: "0369852148",
         VaiTro: "NhanVien",
-        TrangThai: "HoatDong",
+        TrangThai: NHAN_VIEN_TRANG_THAI.HOAT_DONG,
         NguoiTao: "SYSTEM",
         NguoiCapNhat: "SYSTEM",
       },

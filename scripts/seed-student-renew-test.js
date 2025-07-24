@@ -1,7 +1,9 @@
-const { Sequelize } = require("sequelize");
 const { SinhVien, Phong, DangKy, Giuong } = require("../src/models");
 const sequelize = require("../src/config/database");
 const bcrypt = require("bcryptjs");
+const { PHONG_TRANG_THAI } = require("../src/constants/phong");
+const { STUDENT_STATUS } = require("../src/constants/sinhvien");
+const { REGISTRATION_STATUS } = require("../src/constants/dangky");
 
 async function seedStudentRenewTest() {
   await sequelize.authenticate();
@@ -21,7 +23,7 @@ async function seedStudentRenewTest() {
           LoaiPhong: "Nam",
           GiaThueThang: 1000000,
           DienTich: 20,
-          TrangThai: "HoatDong",
+          TrangThai: PHONG_TRANG_THAI.HOAT_DONG,
           NgayTao: new Date(),
           NguoiTao: "seed",
         },
@@ -57,7 +59,7 @@ async function seedStudentRenewTest() {
           Email: "teststudent@example.com",
           EmailDaXacThuc: true,
           MatKhau: matKhauHash,
-          TrangThai: "HoatDong",
+          TrangThai: STUDENT_STATUS.DANG_KY,
           NgayTao: new Date(),
           NguoiTao: "seed",
         },
@@ -97,7 +99,7 @@ async function seedStudentRenewTest() {
         NgayDangKy: today,
         NgayNhanPhong: today,
         NgayKetThucHopDong: endDate,
-        TrangThai: "DA_DUYET",
+        TrangThai: REGISTRATION_STATUS.DA_DUYET,
         NgayTao: today,
         NguoiTao: "seed",
       },

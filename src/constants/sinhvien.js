@@ -4,6 +4,7 @@ const STUDENT_STATUS = {
     DANG_O: "DANG_O",
     NGUNG_O: "NGUNG_O",
     VI_PHAM: "VI_PHAM",
+    KHONG_NHAN_PHONG: "KHONG_NHAN_PHONG",
 };
 
 module.exports = { STUDENT_STATUS };

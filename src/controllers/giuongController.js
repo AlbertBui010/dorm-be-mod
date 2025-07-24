@@ -104,27 +104,22 @@ class GiuongController {
     }
   }
 
-  // PUT /api/giuong/:maGiuong - Update bed
+  // PUT /api/giuong/:maGiuong - Update status bed
   async updateGiuong(req, res) {
     try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return responseHelper.badRequest(
-          res,
-          "Dữ liệu không hợp lệ",
-          errors.array()
-        );
-      }
-
       const { maGiuong } = req.params;
       const updatedBy = req.user.TenDangNhap;
       const giuong = await giuongService.updateGiuong(
         maGiuong,
-        req.body,
+        req.body.TrangThai,
         updatedBy
       );
 
-      return responseHelper.success(res, giuong, "Cập nhật giường thành công");
+      return responseHelper.success(
+        res,
+        giuong,
+        "Cập nhật trạng thái giường thành công"
+      );
     } catch (error) {
       console.error("Error in updateGiuong:", error);
       if (error.message === "Giường không tồn tại") {

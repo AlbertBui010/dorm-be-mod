@@ -4,6 +4,7 @@ const { Op } = require("sequelize");
 const { STUDENT_STATUS } = require("../constants/sinhvien");
 const LichSuOPhong = require("../models/LichSuOPhong");
 const { STUDENT_ROOM_HISTORY } = require("../constants/LichSuOPhong");
+const { sendCheckInSuccessEmail } = require("../utils/email");
 
 class SinhVienService {
   async getAllSinhVien(filters = {}, pagination = {}) {
@@ -283,7 +284,9 @@ class SinhVienService {
 
     // Toggle status (assuming we add a TrangThai field)
     const newStatus =
-      sinhVien.TrangThai === STUDENT_STATUS.DANG_O ? STUDENT_STATUS.NGUNG_O : STUDENT_STATUS.DANG_O;
+      sinhVien.TrangThai === STUDENT_STATUS.DANG_O
+        ? STUDENT_STATUS.NGUNG_O
+        : STUDENT_STATUS.DANG_O;
 
     await sinhVien.update({
       TrangThai: newStatus,
@@ -317,30 +320,8 @@ class SinhVienService {
     };
   }
 
-  // async studentCheckIn(maSinhVien, updatedBy) {
-  //   const sinhVien = await SinhVien.findByPk(maSinhVien);
-
-  //   if (!sinhVien) {
-  //     throw new Error("Sinh viên không tồn tại");
-  //   }
-
-  //   // Check if student is already checked in
-  //   if (sinhVien.TrangThai === STUDENT_STATUS.DANG_O) {
-  //     throw new Error("Sinh viên đã đang ở trong ký túc xá");
-  //   }
-
-  //   // Update status to DANG_O
-  //   await sinhVien.update({
-  //     TrangThai: STUDENT_STATUS.DANG_O,
-  //     NgayCapNhat: new Date(),
-  //     NguoiCapNhat: updatedBy,
-  //   });
-
-  //   return await this.getSinhVienById(maSinhVien);
-  // }
   async studentCheckIn(maSinhVien, updatedBy) {
     const sinhvien = await SinhVien.findByPk(maSinhVien);
-    const transaction = await sequelize.transaction();
 
     if (!sinhvien) {
       throw new Error("Sinh viên không tồn tại");
@@ -356,6 +337,24 @@ class SinhVienService {
       NgayCapNhat: new Date(),
       NguoiCapNhat: updatedBy,
     });
+
+    // Gửi email xác nhận nhận phòng thành công
+    try {
+      // Lấy thông tin phòng, giường, ngày nhận phòng từ sinh viên
+      const phong = sinhvien.MaPhong ? await sinhvien.getPhong() : null;
+      const giuong = sinhvien.MaGiuong ? await sinhvien.getGiuong() : null;
+      const ngayNhanPhong = sinhvien.NgayVao || new Date();
+      await sendCheckInSuccessEmail({
+        email: sinhvien.Email,
+        hoTen: sinhvien.HoTen,
+        maSinhVien: sinhvien.MaSinhVien,
+        maPhong: phong ? phong.SoPhong : '',
+        maGiuong: giuong ? giuong.SoGiuong : '',
+        ngayNhanPhong,
+      });
+    } catch (emailError) {
+      console.error("Error sending check-in success email:", emailError);
+    }
 
     return await this.getSinhVienById(maSinhVien);
   }
@@ -377,11 +376,8 @@ class SinhVienService {
       NguoiCapNhat: updatedBy,
     });
 
-    
-
     return await this.getSinhVienById(maSinhVien);
   }
 }
-
 
 module.exports = new SinhVienService();

@@ -172,94 +172,26 @@ class GiuongService {
     }
   }
 
-  async updateGiuong(maGiuong, updateData, updatedBy) {
-    const transaction = await sequelize.transaction();
-
+  async updateGiuong(maGiuong, trangThai, updatedBy) {
+    // Kiểm tra giường đang không có ngưởi ở mới cho chuyển sang trạng thái BAO_TRI, NGUNG_HOAT_DONG
     try {
-      const giuong = await Giuong.findByPk(maGiuong, {
-        include: [{ model: Phong, as: "Phong" }],
-        transaction,
-      });
-
+      const giuong = await Giuong.findByPk(maGiuong);
       if (!giuong) {
         throw new Error("Giường không tồn tại");
       }
 
-      const oldMaSinhVien = giuong.MaSinhVienChiEm;
-      const newMaSinhVien = updateData.MaSinhVienChiEm;
-
-      // 1. Validate SoGiuong uniqueness if changed
-      if (updateData.SoGiuong && updateData.SoGiuong !== giuong.SoGiuong) {
-        const existingGiuong = await Giuong.findOne({
-          where: {
-            MaPhong: giuong.MaPhong,
-            SoGiuong: updateData.SoGiuong,
-            MaGiuong: { [Op.ne]: maGiuong },
-          },
-          transaction,
-        });
-
-        if (existingGiuong) {
-          throw new Error("Số giường đã tồn tại trong phòng này");
-        }
+      if (giuong.DaCoNguoi) {
+        throw new Error("Không thể chuyển trạng thái giường đang có người ở");
       }
 
-      // 2. Handle student assignment changes
-      if (newMaSinhVien !== oldMaSinhVien) {
-        // If assigning a new student
-        if (newMaSinhVien) {
-          // Check if student exists
-          const sinhVien = await SinhVien.findByPk(newMaSinhVien);
-          if (!sinhVien) {
-            throw new Error("Sinh viên không tồn tại");
-          }
+      await giuong.update({
+        TrangThai: trangThai,
+        NgayCapNhat: new Date(),
+        NguoiCapNhat: updatedBy,
+      });
 
-          // Check if student is already assigned to another bed
-          const existingAssignment = await Giuong.findOne({
-            where: {
-              MaSinhVienChiEm: newMaSinhVien,
-              MaGiuong: { [Op.ne]: maGiuong },
-            },
-            transaction,
-          });
-
-          if (existingAssignment) {
-            throw new Error("Sinh viên đã được gán giường khác");
-          }
-
-          // If bed was empty, check room capacity
-          if (!oldMaSinhVien) {
-            if (giuong.Phong.SoLuongHienTai >= giuong.Phong.SucChua) {
-              throw new Error("Phòng đã đầy, không thể gán thêm sinh viên");
-            }
-            // Increment room count
-            await giuong.Phong.increment("SoLuongHienTai", { transaction });
-          }
-        }
-
-        // If removing a student from bed
-        if (oldMaSinhVien && !newMaSinhVien) {
-          // Decrement room count
-          await giuong.Phong.decrement("SoLuongHienTai", { transaction });
-        }
-      }
-
-      // 3. Update bed
-      await giuong.update(
-        {
-          ...(updateData.SoGiuong && { SoGiuong: updateData.SoGiuong }),
-          DaCoNguoi: newMaSinhVien ? true : false,
-          MaSinhVienChiEm: newMaSinhVien || null,
-          NgayCapNhat: new Date(),
-          NguoiCapNhat: updatedBy,
-        },
-        { transaction }
-      );
-
-      await transaction.commit();
       return await this.getGiuongById(maGiuong);
     } catch (error) {
-      await transaction.rollback();
       throw error;
     }
   }

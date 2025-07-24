@@ -45,7 +45,7 @@ function calculateEndDate(ngayNhanPhong) {
   // Ngày cuối cùng của tháng cuối quý
   const endDate = new Date(endYear, endMonth + 1, 0); // Ngày cuối tháng
   console.log(endDate.toLocaleDateString("vi-VN")); // 👉 hiển thị: 30/09/2025
-
+  console.log(endDate);
   return endDate;
 }
 

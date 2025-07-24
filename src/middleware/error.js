@@ -41,7 +41,18 @@ const notFound = (req, res) => {
   return errorResponse(res, "Endpoint không tồn tại", 404);
 };
 
+// Định nghĩa AppError để sử dụng cho các service
+class AppError extends Error {
+  constructor(message, statusCode = 400) {
+    super(message);
+    this.name = "AppError";
+    this.statusCode = statusCode;
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
 module.exports = {
   errorHandler,
   notFound,
+  AppError,
 };

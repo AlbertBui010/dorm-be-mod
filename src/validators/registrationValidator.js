@@ -15,6 +15,8 @@ class RegistrationValidator {
         .normalizeEmail(),
 
       body("hoTen")
+        .matches(/^[a-zA-Z0-9\s]+$/)
+        .withMessage("Họ tên không được có ký tự đặc biệt.")
         .notEmpty()
         .withMessage("Họ tên là bắt buộc.")
         .isLength({ min: 2, max: 100 })

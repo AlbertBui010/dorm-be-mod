@@ -8,6 +8,7 @@ const LichSuOPhong = require("../models/LichSuOPhong");
 const ThanhToan = require("../models/ThanhToan");
 const emailService = require("../utils/email");
 const { PHONG_STATUS } = require("../constants/phong");
+const { GIUONG_STATUS } = require("../constants/giuong");
 const { REGISTRATION_STATUS } = require("../constants/dangky");
 const { STUDENT_STATUS } = require("../constants/sinhvien");
 const { STUDENT_ROOM_HISTORY } = require("../constants/LichSuOPhong");
@@ -80,11 +81,11 @@ class RegistrationApprovalService {
     try {
       const offset = (page - 1) * limit;
       const whereConditions = {};
-      
+
       // Sửa logic filter trạng thái
       if (trangThai) {
-        if (trangThai.includes(',')) {
-          whereConditions.TrangThai = { [Op.in]: trangThai.split(',') };
+        if (trangThai.includes(",")) {
+          whereConditions.TrangThai = { [Op.in]: trangThai.split(",") };
         } else {
           whereConditions.TrangThai = trangThai;
         }
@@ -270,22 +271,24 @@ class RegistrationApprovalService {
               "GioiTinh",
               "SoDienThoai",
             ],
-          }
-        ]
+          },
+        ],
       });
 
       if (!registration) {
         return { success: false, message: "Không tìm thấy đăng ký" };
       }
 
-      let soPhong = null, soGiuong = null;
-      if (registration.TrangThai === REGISTRATION_STATUS.DA_DUYET && registration.sinhVien) {
+      let soPhong = null,
+        soGiuong = null;
+      if (
+        registration.TrangThai === REGISTRATION_STATUS.DA_DUYET &&
+        registration.sinhVien
+      ) {
         // Tìm giường của sinh viên này
         const giuong = await Giuong.findOne({
           where: { MaSinhVienChiEm: registration.MaSinhVien },
-          include: [
-            { model: Phong, as: "Phong", attributes: ["SoPhong"] }
-          ]
+          include: [{ model: Phong, as: "Phong", attributes: ["SoPhong"] }],
         });
         if (giuong) {
           soPhong = giuong.Phong?.SoPhong || null;
@@ -374,10 +377,17 @@ class RegistrationApprovalService {
         .map((room) => {
           const allBeds = room.Giuongs || [];
 
+          // Lọc giường trống và giường đã có người có trạng thái hoạt động
           const emptyBeds = allBeds.filter(
-            (bed) => bed.DaCoNguoi === false || bed.DaCoNguoi === null
+            (bed) =>
+              (bed.DaCoNguoi === false || bed.DaCoNguoi === null) &&
+              bed.TrangThai === GIUONG_STATUS.HOAT_DONG
           );
-          const occupiedBeds = allBeds.filter((bed) => bed.DaCoNguoi === true);
+          const occupiedBeds = allBeds.filter(
+            (bed) =>
+              bed.DaCoNguoi === true &&
+              bed.TrangThai === GIUONG_STATUS.HOAT_DONG
+          );
 
           return {
             ...room.toJSON(),
@@ -484,6 +494,7 @@ class RegistrationApprovalService {
           MaGiuong: maGiuong,
           MaPhong: maPhong,
           DaCoNguoi: false, // Kiểm tra giường trống qua DaCoNguoi
+          TrangThai: GIUONG_STATUS.HOAT_DONG,
         },
         include: [
           {
@@ -611,6 +622,7 @@ class RegistrationApprovalService {
           maGiuong: bed.SoGiuong, // Gửi số giường thay vì mã
           ngayNhanPhong: registration.NgayNhanPhong,
         });
+        // Có thể bổ sung thêm: nhấn mạnh sinh viên phải đến văn phòng ký túc xá để xác thực nhận phòng
       } catch (emailError) {
         console.error("Error sending approval email:", emailError);
         // Không rollback transaction vì đăng ký đã được duyệt thành công

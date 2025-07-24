@@ -20,7 +20,7 @@ class PaymentValidator {
           "CHUA_THANH_TOAN",
           "DANG_CHO_THANH_TOAN",
           "DA_THANH_TOAN",
-          "CHO_XAC_NHAN_TIEN_MAT",
+          "CHO_XAC_NHAN",
           "QUA_HAN",
         ])
         .withMessage("Trạng thái không hợp lệ"),

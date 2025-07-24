@@ -2,6 +2,7 @@ const bcrypt = require("bcryptjs");
 const { Op } = require("sequelize");
 const NhanVien = require("../models/NhanVien");
 const { AppError } = require("../middleware/error");
+const { NHAN_VIEN_TRANG_THAI } = require("../constants/nhanVien");
 
 class NhanVienService {
   async getAll(filters = {}) {
@@ -94,7 +95,7 @@ class NhanVienService {
       Email,
       MatKhau: hashedPassword,
       ...otherData,
-      TrangThai: "HoatDong",
+      TrangThai: NHAN_VIEN_TRANG_THAI.HOAT_DONG, // Mặc định là HOAT_DONG khi tạo mới.
       NguoiTao: adminId,
       NguoiCapNhat: adminId,
     });
@@ -108,7 +109,7 @@ class NhanVienService {
       throw new AppError("Không tìm thấy nhân viên", 404);
     }
 
-    const { TenDangNhap, Email, MatKhau, ...otherData } = data;
+    const { TenDangNhap, Email, MatKhau, TrangThai, ...otherData } = data;
 
     // Check uniqueness if changing username or email
     if (TenDangNhap && TenDangNhap !== nhanVien.TenDangNhap) {
@@ -118,6 +119,12 @@ class NhanVienService {
       }
     }
 
+    // Không thể tự cập nhật chính mình
+    if (parseInt(id) === parseInt(adminId) && TrangThai) {
+      throw new AppError("Không thể cập nhật trạng thái của chính mình", 400);
+    }
+    if (TrangThai) updateData.TrangThai = TrangThai;
+
     if (Email && Email !== nhanVien.Email) {
       const existing = await NhanVien.findOne({ where: { Email } });
       if (existing) {
@@ -125,7 +132,6 @@ class NhanVienService {
       }
     }
 
-    // Prepare update data
     const updateData = {
       ...otherData,
       NguoiCapNhat: adminId,
@@ -134,7 +140,6 @@ class NhanVienService {
     if (TenDangNhap) updateData.TenDangNhap = TenDangNhap;
     if (Email) updateData.Email = Email;
 
-    // Hash new password if provided
     if (MatKhau) {
       updateData.MatKhau = await bcrypt.hash(MatKhau, 12);
     }
@@ -155,7 +160,10 @@ class NhanVienService {
       throw new AppError("Không thể khóa tài khoản của chính mình", 400);
     }
 
-    const newStatus = nhanVien.TrangThai === "HoatDong" ? "Khoa" : "HoatDong";
+    const newStatus =
+      nhanVien.TrangThai === NHAN_VIEN_TRANG_THAI.HOAT_DONG
+        ? NHAN_VIEN_TRANG_THAI.KHOA
+        : NHAN_VIEN_TRANG_THAI.HOAT_DONG;
 
     await nhanVien.update({
       TrangThai: newStatus,
@@ -219,8 +227,12 @@ class NhanVienService {
 
   async getStats() {
     const total = await NhanVien.count();
-    const active = await NhanVien.count({ where: { TrangThai: "HoatDong" } });
-    const locked = await NhanVien.count({ where: { TrangThai: "Khoa" } });
+    const active = await NhanVien.count({
+      where: { TrangThai: NHAN_VIEN_TRANG_THAI.HOAT_DONG },
+    });
+    const locked = await NhanVien.count({
+      where: { TrangThai: NHAN_VIEN_TRANG_THAI.KHOA },
+    });
 
     const roleStats = await NhanVien.findAll({
       attributes: [

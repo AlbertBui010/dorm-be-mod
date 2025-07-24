@@ -1,6 +1,7 @@
 const GIUONG_STATUS = {
   HOAT_DONG: "HOAT_DONG",
-  KHOA: "KHOA",
+  BAO_TRI: "BAO_TRI",
+  NGUNG_HOAT_DONG: "NGUNG_HOAT_DONG",
 };
 
 module.exports = { GIUONG_STATUS };

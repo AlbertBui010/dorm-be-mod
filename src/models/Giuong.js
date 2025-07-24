@@ -36,6 +36,11 @@ const Giuong = sequelize.define(
         key: "MaSinhVien",
       },
     },
+    TrangThai: {
+      type: DataTypes.ENUM("HOAT_DONG", "BAO_TRI", "NGUNG_HOAT_DONG"),
+      allowNull: false,
+      defaultValue: "HOAT_DONG",
+    },
     NgayTao: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
