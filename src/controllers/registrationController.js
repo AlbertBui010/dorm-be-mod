@@ -23,17 +23,6 @@ class RegistrationController {
         nguyenVong,
       } = req.body;
 
-      // Validation cơ bản
-      if (!email || !hoTen) {
-        return errorResponse(res, "Email và họ tên là bắt buộc.", 400);
-      }
-
-      // Validate email format
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
-        return errorResponse(res, "Email không hợp lệ.", 400);
-      }
-
       const result = await registrationService.createRegistration({
         email,
         hoTen,

@@ -111,25 +111,11 @@ class PhongService {
     // 3. Create room with initial values
     const phong = await Phong.create({
       ...phongData,
-      SoLuongHienTai: 0, // Initially empty
+      SoLuongHienTai: 0,
       TrangThai: phongData.TrangThai || PHONG_STATUS.HOAT_DONG,
       NgayTao: new Date(),
       NguoiTao: createdBy,
     });
-
-    // 4. Create beds for the room
-    const beds = [];
-    for (let i = 1; i <= phongData.SucChua; i++) {
-      beds.push({
-        MaPhong: phong.MaPhong,
-        SoGiuong: `G${i.toString().padStart(2, "0")}`, // G01, G02, etc.
-        DaCoNguoi: false,
-        NgayTao: new Date(),
-        NguoiTao: createdBy,
-      });
-    }
-
-    await Giuong.bulkCreate(beds);
 
     return await this.getPhongById(phong.MaPhong);
   }

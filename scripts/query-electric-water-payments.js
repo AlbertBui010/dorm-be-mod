@@ -11,7 +11,7 @@ async function queryElectricWaterPayments(maPhong, thangNam) {
     where: {
       MaPhong: maPhong,
       ThangNam: thangNam,
-      LoaiThanhToan: PAYMENT_TYPE.DIEN_NUOC,
+      LoaiThanhToan: PAYMENT_TYPE.TIEN_DIEN_NUOC,
     },
     include: [
       {

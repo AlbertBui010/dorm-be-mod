@@ -770,6 +770,8 @@ class PaymentService {
           MoTa: note
             ? `${payment.MoTa || ""}\nGhi chú phê duyệt: ${note}`
             : payment.MoTa,
+          NguoiCapNhat: adminId,
+          OrderCode: `TM_${payment.MaThanhToan}`,
         },
         { transaction }
       );

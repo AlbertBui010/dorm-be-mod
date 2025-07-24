@@ -522,7 +522,6 @@ class RegistrationApprovalService {
         {
           MaPhong: maPhong,
           MaGiuong: maGiuong,
-          NgayVao: registration.NgayNhanPhong,
           TrangThai: STUDENT_STATUS.CHO_NHAN_PHONG,
           NgayCapNhat: new Date(),
           NguoiCapNhat: nguoiDuyet,
@@ -557,7 +556,7 @@ class RegistrationApprovalService {
         {
           MaSinhVien: registration.MaSinhVien,
           MaPhong: maPhong,
-          NgayVao: registration.NgayNhanPhong,
+          NgayBatDau: registration.NgayNhanPhong,
           TrangThai: STUDENT_ROOM_HISTORY.CHO_NHAN_PHONG,
           NgayTao: new Date(),
           NguoiTao: nguoiDuyet,

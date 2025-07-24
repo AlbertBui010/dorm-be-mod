@@ -455,7 +455,7 @@ class PaymentController {
     try {
       const { maThanhToan } = req.params;
       const { note } = req.body;
-      const adminId = req.user.maNhanVien;
+      const adminId = req.user.MaNhanVien;
 
       const result = await paymentService.approveCashPayment(maThanhToan, {
         adminId,
@@ -491,7 +491,7 @@ class PaymentController {
     try {
       const { maThanhToan } = req.params;
       const { reason } = req.body;
-      const adminId = req.user.maNhanVien;
+      const adminId = req.user.MaNhanVien;
 
       const result = await paymentService.rejectCashPayment(maThanhToan, {
         adminId,
