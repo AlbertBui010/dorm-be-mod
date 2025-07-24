@@ -34,8 +34,8 @@ const createPhongValidator = [
 
   body("TrangThai")
     .optional()
-    .isIn(["HOAT_DONG", "KHOA"])
-    .withMessage("Trạng thái phải là 'HOAT_DONG' hoặc 'KHOA'"),
+    .isIn(["HOAT_DONG", "NGUNG_HOAT_DONG","BAO_TRI"])
+    .withMessage("Trạng thái phải là 'HOAT_DONG' hoặc 'NGUNG_HOAT_DONG','BAO_TRI'"),
 ];
 
 const updatePhongValidator = [
@@ -75,7 +75,7 @@ const updatePhongValidator = [
 
   body("TrangThai")
     .optional()
-    .isIn(["HOAT_DONG", "KHOA"])
+    .isIn(["HOAT_DONG", "NGUNG_HOAT_DONG", "BAO_TRI"])
     .withMessage("Trạng thái phải là 'HOAT_DONG' hoặc 'KHOA'"),
 ];
 
