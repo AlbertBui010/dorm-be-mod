@@ -1,4 +1,5 @@
 const { body, validationResult } = require("express-validator");
+const { NHAN_VIEN_TRANG_THAI } = require("../constants/nhanVien");
 
 const handleValidationErrors = (req, res, next) => {
   const errors = validationResult(req);
@@ -87,6 +88,15 @@ const update = [
     .withMessage("Số điện thoại không hợp lệ")
     .isLength({ max: 20 })
     .withMessage("Số điện thoại không được quá 20 ký tự"),
+
+  body("TrangThai")
+    .optional()
+    .isIn([
+      NHAN_VIEN_TRANG_THAI.HOAT_DONG,
+      NHAN_VIEN_TRANG_THAI.KHOA,
+      NHAN_VIEN_TRANG_THAI.DA_NGHI,
+    ])
+    .withMessage("Trạng thái không hợp lệ"),
 
   body("VaiTro")
     .optional()

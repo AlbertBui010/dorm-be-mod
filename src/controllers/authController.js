@@ -6,8 +6,6 @@ class AuthController {
   async login(req, res, next) {
     try {
       const { username, password } = req.body;
-      console.log(":::::::::::::::::::::::::::::::", req);
-
       const result = await AuthService.login({ username, password });
 
       return successResponse(res, result, "Đăng nhập thành công");
