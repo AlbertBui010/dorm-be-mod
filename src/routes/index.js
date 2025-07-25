@@ -11,6 +11,7 @@ const paymentRoutes = require("./paymentRoutes");
 const chiSoDienNuocRoutes = require("./chiSoDienNuocRoutes");
 const yeuCauChuyenPhongRoutes = require("./yeuCauChuyenPhongRoutes");
 const lichSuOPhongRoutes = require("./lichSuOPhongRoutes");
+const chiTietDienNuocRoutes = require("./chiTietDienNuocRoutes");
 
 const router = express.Router();
 
@@ -36,5 +37,6 @@ router.use("/payments", paymentRoutes);
 router.use("/chi-so-dien-nuoc", chiSoDienNuocRoutes);
 router.use("/yeu-cau-chuyen-phong", yeuCauChuyenPhongRoutes);
 router.use("/lich-su-o-phong", lichSuOPhongRoutes);
+router.use("/chi-tiet-dien-nuoc", chiTietDienNuocRoutes);
 
 module.exports = router;

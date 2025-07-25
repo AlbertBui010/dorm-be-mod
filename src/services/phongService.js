@@ -147,54 +147,21 @@ class PhongService {
         throw new Error("Sức chứa phòng phải từ 1 đến 10 người");
       }
 
-      // Check if reducing capacity would affect current residents
-      if (updateData.SucChua < phong.SoLuongHienTai) {
+      // Kiểm tra xem sức chứa có giảm xuống dưới số lượng giường hiện tại không
+      const currentBeds = await Giuong.findAll({
+        where: { MaPhong: maPhong },
+      });
+      if (currentBeds.length > updateData.SucChua) {
         throw new Error(
           "Không thể giảm sức chứa xuống dưới số lượng hiện tại đang ở"
         );
       }
 
-      // Update beds if capacity changes
-      if (updateData.SucChua !== phong.SucChua) {
-        if (updateData.SucChua > phong.SucChua) {
-          // Add more beds
-          const newBeds = [];
-          for (let i = phong.SucChua + 1; i <= updateData.SucChua; i++) {
-            newBeds.push({
-              MaPhong: maPhong,
-              SoGiuong: `G${i.toString().padStart(2, "0")}`,
-              DaCoNguoi: false,
-              NgayTao: new Date(),
-              NguoiTao: updatedBy,
-            });
-          }
-          await Giuong.bulkCreate(newBeds);
-        } else {
-          // Remove beds (only if they're empty)
-          const bedsToRemove = await Giuong.findAll({
-            where: {
-              MaPhong: maPhong,
-              SoGiuong: {
-                [Op.gt]: `G${updateData.SucChua.toString().padStart(2, "0")}`,
-              },
-            },
-          });
-
-          for (const bed of bedsToRemove) {
-            if (bed.DaCoNguoi) {
-              throw new Error("Không thể xóa giường đang có người ở");
-            }
-          }
-
-          await Giuong.destroy({
-            where: {
-              MaPhong: maPhong,
-              SoGiuong: {
-                [Op.gt]: `G${updateData.SucChua.toString().padStart(2, "0")}`,
-              },
-            },
-          });
-        }
+      // Check if reducing capacity would affect current residents
+      if (updateData.SucChua < phong.SoLuongHienTai) {
+        throw new Error(
+          "Không thể giảm sức chứa xuống dưới số lượng hiện tại đang ở"
+        );
       }
     }
 
