@@ -1,4 +1,4 @@
-const { Phong, Giuong, SinhVien } = require("../models");
+const { Phong, Giuong } = require("../models");
 const { Op } = require("sequelize");
 const sequelize = require("../config/database");
 const { PHONG_STATUS } = require("../constants/phong");
@@ -114,7 +114,7 @@ class PhongService {
       SoLuongHienTai: 0,
       TrangThai: phongData.TrangThai || PHONG_STATUS.HOAT_DONG,
       NgayTao: new Date(),
-      NguoiTao: createdBy,
+      NguoiTao: createdBy ? createdBy.toLowerCase() : null,
     });
 
     return await this.getPhongById(phong.MaPhong);
@@ -180,7 +180,7 @@ class PhongService {
     await phong.update({
       ...updateData,
       NgayCapNhat: new Date(),
-      NguoiCapNhat: updatedBy,
+      NguoiCapNhat: updatedBy ? updatedBy.toLowerCase() : null,
     });
 
     return await this.getPhongById(maPhong);

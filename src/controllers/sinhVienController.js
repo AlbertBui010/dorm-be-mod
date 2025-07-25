@@ -3,9 +3,10 @@ const { successResponse, paginationResponse } = require("../utils/response");
 class SinhVienController {
   async getAllSinhVien(req, res, next) {
     try {
-      const { page, limit, search, gioiTinh, trangThai } = req.query;
+      const { page, limit, search, gioiTinh, trangThai, maPhong } = req.query;
 
       const filters = { search, gioiTinh, trangThai };
+      if (maPhong) filters.maPhong = maPhong;
       const pagination = { page, limit };
 
       const result = await SinhVienService.getAllSinhVien(filters, pagination);
@@ -14,7 +15,7 @@ class SinhVienController {
         res,
         result.sinhViens,
         result.pagination,
-        "Lấy danh sách sinh viên thành công"
+        "Lấy danh sách sinh viên thành công",
       );
     } catch (error) {
       next(error);
@@ -30,7 +31,7 @@ class SinhVienController {
       return successResponse(
         res,
         sinhVien,
-        "Lấy thông tin sinh viên thành công"
+        "Lấy thông tin sinh viên thành công",
       );
     } catch (error) {
       next(error);
@@ -47,7 +48,7 @@ class SinhVienController {
       return successResponse(
         res,
         sinhViens,
-        "Lấy danh sách sinh viên chưa có giường thành công"
+        "Lấy danh sách sinh viên chưa có giường thành công",
       );
     } catch (error) {
       next(error);
@@ -61,7 +62,7 @@ class SinhVienController {
 
       const sinhVien = await SinhVienService.createSinhVien(
         sinhVienData,
-        createdBy
+        createdBy,
       );
 
       return successResponse(res, sinhVien, "Tạo sinh viên thành công", 201);
@@ -79,7 +80,7 @@ class SinhVienController {
       const sinhVien = await SinhVienService.updateSinhVien(
         maSinhVien,
         updateData,
-        updatedBy
+        updatedBy,
       );
 
       return successResponse(res, sinhVien, "Cập nhật sinh viên thành công");
@@ -107,13 +108,13 @@ class SinhVienController {
 
       const sinhVien = await SinhVienService.toggleStudentStatus(
         maSinhVien,
-        updatedBy
+        updatedBy,
       );
 
       return successResponse(
         res,
         sinhVien,
-        "Thay đổi trạng thái sinh viên thành công"
+        "Thay đổi trạng thái sinh viên thành công",
       );
     } catch (error) {
       next(error);
@@ -129,7 +130,7 @@ class SinhVienController {
       return successResponse(
         res,
         result,
-        "Kiểm tra dữ liệu liên quan thành công"
+        "Kiểm tra dữ liệu liên quan thành công",
       );
     } catch (error) {
       next(error);
@@ -147,24 +148,34 @@ class SinhVienController {
   }
   async checkIn(req, res, next) {
     try {
-      const {maSinhVien} = req.params;
+      const { maSinhVien } = req.params;
       const updatedBy = req.user?.TenDangNhap || "system";
-      const result = await SinhVienService.studentCheckIn(maSinhVien, updatedBy);
-      return successResponse(res, result?.toJSON ? result.toJSON() : result, "sinh viên đã nhận phòng");
+      const result = await SinhVienService.studentCheckIn(
+        maSinhVien,
+        updatedBy,
+      );
+      return successResponse(
+        res,
+        result?.toJSON ? result.toJSON() : result,
+        "sinh viên đã nhận phòng",
+      );
     } catch (error) {
       next(error);
     }
   }
   async checkOut(req, res, next) {
     try {
-      const {maSinhVien} = req.params;
+      const { maSinhVien } = req.params;
       const updatedBy = req.user?.TenDangNhap || "system";
-      const result = await SinhVienService.studentCheckOut(maSinhVien, updatedBy);
+      const result = await SinhVienService.studentCheckOut(
+        maSinhVien,
+        updatedBy,
+      );
       return successResponse(res, result, "sinh viên đã thôi ở ký túc xá");
     } catch (error) {
       next(error);
     }
-  } 
+  }
 }
 
 module.exports = new SinhVienController();

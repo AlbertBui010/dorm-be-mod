@@ -23,8 +23,6 @@ router.post("/", nhanVienValidator.create, nhanVienController.create);
 
 router.put("/:id", nhanVienValidator.update, nhanVienController.update);
 
-router.patch("/:id/toggle-status", nhanVienController.toggleStatus);
-
 router.delete("/:id", nhanVienController.delete);
 
 module.exports = router;

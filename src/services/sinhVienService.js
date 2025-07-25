@@ -11,6 +11,7 @@ class SinhVienService {
     const offset = (page - 1) * limit;
 
     const whereClause = {};
+    const include = [];
 
     if (filters.search) {
       whereClause[Op.or] = [
@@ -28,12 +29,45 @@ class SinhVienService {
       whereClause.TrangThai = filters.trangThai;
     }
 
+    // Nếu có filter maPhong thì join với Giuong và Phong
+    if (filters.maPhong) {
+      include.push({
+        association: "Giuong",
+        required: true,
+        include: [
+          {
+            association: "Phong",
+            required: true,
+            where: { MaPhong: filters.maPhong },
+            attributes: ["MaPhong", "SoPhong"],
+          },
+        ],
+        attributes: ["MaGiuong", "MaPhong"],
+      });
+    } else {
+      // Nếu không filter thì vẫn trả về thông tin giường/phòng nếu có
+      include.push({
+        association: "Giuong",
+        required: false,
+        include: [
+          {
+            association: "Phong",
+            required: false,
+            attributes: ["MaPhong", "SoPhong"],
+          },
+        ],
+        attributes: ["MaGiuong", "MaPhong"],
+      });
+    }
+
     const { rows: sinhViens, count: total } = await SinhVien.findAndCountAll({
       where: whereClause,
       limit: parseInt(limit),
       offset: parseInt(offset),
       order: [["NgayTao", "DESC"]],
       attributes: { exclude: ["MatKhau", "MaXacThucEmail"] },
+      include,
+      distinct: true,
     });
 
     return {
@@ -192,8 +226,8 @@ class SinhVienService {
     if (relatedData.hasRelatedRecords) {
       throw new Error(
         `Không thể xóa sinh viên do còn có dữ liệu liên quan: ${relatedData.relatedTables.join(
-          ", "
-        )}`
+          ", ",
+        )}`,
       );
     }
 
