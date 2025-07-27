@@ -6,19 +6,15 @@ const { NHAN_VIEN_TRANG_THAI } = require("../constants/nhanVien");
 const authenticate = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
-    console.log("Auth header:", authHeader);
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      console.log("No auth header or wrong format");
       return errorResponse(res, "Token không được cung cấp", 401);
     }
 
     const token = authHeader.substring(7);
-    console.log("Token:", token.substring(0, 50) + "...");
 
     try {
       const decoded = verifyToken(token);
-      console.log("Token decoded:", decoded);
 
       let user = null;
 
@@ -72,9 +68,6 @@ const authenticate = async (req, res, next) => {
 
       next();
     } catch (tokenError) {
-      console.log("Token verification error:", tokenError.message);
-      console.log("Token was:", token.substring(0, 50) + "...");
-      console.log("JWT_SECRET exists:", !!process.env.JWT_SECRET);
       return errorResponse(res, "Chưa xác thực", 401);
     }
   } catch (error) {
@@ -88,12 +81,6 @@ const authorize = (...roles) => {
       return errorResponse(res, "Chưa xác thực", 401);
     }
 
-    console.log("User data:", {
-      userType: req.user.userType,
-      VaiTro: req.user.VaiTro,
-      requiredRoles: roles,
-    });
-
     // Allow all roles for students (they have limited access by default)
     if (req.user.userType === "student") {
       return next();
@@ -102,15 +89,11 @@ const authorize = (...roles) => {
     // Flatten roles array if it contains arrays (for backward compatibility)
     const flatRoles = roles.flat();
 
-    console.log("Flattened roles:", flatRoles);
-
     // Check employee roles
     if (!flatRoles.includes(req.user.VaiTro)) {
-      console.log("Access denied - Role mismatch");
       return errorResponse(res, "Không có quyền truy cập", 403);
     }
 
-    console.log("Access granted");
     next();
   };
 };
@@ -135,7 +118,6 @@ const authorizeEmployee = (...roles) => {
 };
 
 const authorizeStudent = (req, res, next) => {
-  console.log("::::::::::::::::::::::::", req.user);
   if (!req.user) {
     return errorResponse(res, "Chưa xác thực", 401);
   }

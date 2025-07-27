@@ -134,8 +134,8 @@ class ChiSoDienNuocService {
         throw new Error("Tổng tiền điện nước bằng 0, không tạo hóa đơn.");
       }
 
-      // 3. Xác định khoảng thời gian tháng
-      const [year, month] = chiSo.ThangNam.split("-").map(Number);
+      // 3. Xác định khoảng thời gian tháng (format MM/YYYY)
+      const [month, year] = chiSo.ThangNam.split("/").map(Number);
       const startDate = new Date(year, month - 1, 1);
       const endDate = new Date(year, month, 0); // ngày cuối tháng
 

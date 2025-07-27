@@ -380,7 +380,9 @@ class PaymentController {
         search = "",
         status = "",
         type = "",
+        method = "",
         month = "",
+        room = "",
         startDate = "",
         endDate = "",
       } = req.query;
@@ -391,7 +393,9 @@ class PaymentController {
         search,
         status,
         type,
+        method,
         month,
+        room,
         startDate,
         endDate,
       });
