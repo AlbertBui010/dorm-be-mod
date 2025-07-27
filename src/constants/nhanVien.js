@@ -1,0 +1,7 @@
+const NHAN_VIEN_TRANG_THAI = {
+  HOAT_DONG: "HOAT_DONG",
+  DA_NGHI: "DA_NGHI",
+  KHOA: "KHOA",
+};
+
+export { NHAN_VIEN_TRANG_THAI };

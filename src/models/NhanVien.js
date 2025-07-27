@@ -1,5 +1,6 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
+const { NHAN_VIEN_TRANG_THAI } = require("../constants/nhanVien");
 
 const NhanVien = sequelize.define(
   "NhanVien",
@@ -37,7 +38,8 @@ const NhanVien = sequelize.define(
     },
     TrangThai: {
       type: DataTypes.STRING(20),
-      defaultValue: "HoatDong",
+      enum: Object.values(NHAN_VIEN_TRANG_THAI),
+      defaultValue: NHAN_VIEN_TRANG_THAI.HOAT_DONG,
     },
     NgayTao: {
       type: DataTypes.DATE,

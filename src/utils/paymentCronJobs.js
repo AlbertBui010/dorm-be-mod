@@ -229,6 +229,81 @@ class PaymentCronJobs {
       }
     );
 
+    // Job 5: Hủy đăng ký nếu sinh viên không đến nhận phòng sau 2 ngày kể từ ngày nhận phòng dự kiến
+    cron.schedule(
+      "0 23 * * *",
+      async () => {
+        console.log("🚨 Checking students who did not check-in after approval...");
+        try {
+          const twoDaysAgo = new Date();
+          twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+
+          // Lấy các đăng ký đã duyệt, chưa bị từ chối, chưa check-in, ngày nhận phòng <= twoDaysAgo
+          const overdueRegs = await DangKy.findAll({
+            where: {
+              TrangThai: "DA_DUYET",
+              NgayNhanPhong: { [Op.lte]: twoDaysAgo },
+            },
+            include: [
+              {
+                model: SinhVien,
+                as: "sinhVien",
+                attributes: ["MaSinhVien", "HoTen", "Email", "TrangThai", "MaPhong", "MaGiuong"],
+              },
+            ],
+          });
+
+          for (const reg of overdueRegs) {
+            const sv = reg.sinhVien;
+            if (!sv) continue;
+            // Chỉ xử lý nếu sinh viên vẫn ở trạng thái CHO_NHAN_PHONG hoặc DA_DUYET
+            if (sv.TrangThai !== "CHO_NHAN_PHONG" && sv.TrangThai !== "DA_DUYET") continue;
+
+            // Đổi trạng thái đăng ký thành DA_TU_CHOI (hoặc KHONG_NHAN_PHONG nếu có)
+            await reg.update({ TrangThai: "DA_TU_CHOI" });
+
+            // Đổi trạng thái sinh viên thành KHONG_NHAN_PHONG
+            await sv.update({
+              TrangThai: "KHONG_NHAN_PHONG",
+              MaPhong: null,
+              MaGiuong: null,
+            });
+
+            // Bỏ gán phòng/giường (nếu có)
+            if (sv.MaGiuong) {
+              const Giuong = require("../models/Giuong");
+              await Giuong.update(
+                { DaCoNguoi: false, MaSinhVienChiEm: null },
+                { where: { MaGiuong: sv.MaGiuong } }
+              );
+            }
+
+            // Gửi email thông báo
+            try {
+              await emailService.sendCancelDueToNoCheckInEmail({
+                email: sv.Email,
+                hoTen: sv.HoTen,
+                maSinhVien: sv.MaSinhVien,
+                maPhong: reg.MaPhong,
+                maGiuong: reg.MaGiuong,
+                ngayNhanPhong: reg.NgayNhanPhong,
+                soNgayChoPhep: 2,
+              });
+              console.log(`📧 Sent cancel due to no check-in to ${sv.Email}`);
+            } catch (err) {
+              console.error(`❌ Failed to send cancel due to no check-in to ${sv.Email}:`, err.message);
+            }
+          }
+        } catch (error) {
+          console.error("❌ Error checking students who did not check-in:", error);
+        }
+      },
+      {
+        scheduled: true,
+        timezone: "Asia/Ho_Chi_Minh",
+      }
+    );
+
     console.log("✅ Payment cron jobs initialized successfully");
   }
 

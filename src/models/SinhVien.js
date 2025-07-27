@@ -1,5 +1,6 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
+const { STUDENT_STATUS } = require("../constants/sinhvien");
 
 const SinhVien = sequelize.define(
   "SinhVien",
@@ -44,7 +45,7 @@ const SinhVien = sequelize.define(
     TrangThai: {
       type: DataTypes.STRING(20),
       allowNull: true,
-      defaultValue: "HoatDong",
+      defaultValue: STUDENT_STATUS.DANG_KY,
     },
     NgayTao: {
       type: DataTypes.DATE,

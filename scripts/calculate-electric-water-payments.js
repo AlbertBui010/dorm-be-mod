@@ -104,20 +104,38 @@ async function calculateAndCreatePayments(maPhong, thangNam) {
   // 11. Tạo bản ghi ThanhToan cho từng sinh viên
   for (const sv of finalSinhVienDays) {
     const soTien = Math.round(giaTienMoiNgay * sv.soNgayO);
+
+    // Kiểm tra trùng lặp hóa đơn điện nước
+    const existed = await ThanhToan.findOne({
+      where: {
+        MaSinhVien: sv.MaSinhVien,
+        MaPhong: maPhong,
+        ThangNam: thangNam,
+        LoaiThanhToan: "TIEN_DIEN_NUOC",
+      },
+    });
+    if (existed) {
+      console.log(
+        `Đã tồn tại hóa đơn điện nước cho sinh viên ${sv.MaSinhVien} tháng ${thangNam}, bỏ qua.`
+      );
+      continue;
+    }
+
+    // Tạo hóa đơn mới
     await ThanhToan.create({
       MaSinhVien: sv.MaSinhVien,
       MaPhong: maPhong,
       ThangNam: thangNam,
       SoTien: soTien,
-      LoaiThanhToan: "dien_nuoc",
-      TrangThai: "chua_thanh_toan",
+      LoaiThanhToan: "TIEN_DIEN_NUOC",
+      TrangThai: "CHUA_THANH_TOAN",
       NguoiTao: "he-thong",
       NguoiCapNhat: "he-thong",
       createdAt: new Date(),
       updatedAt: new Date(),
     });
     console.log(
-      `Đã tạo thanh toán cho sinh viên ${sv.MaSinhVien}: ${soTien} VND (${sv.soNgayO} ngày)`
+      `Đã tạo hóa đơn điện nước cho sinh viên ${sv.MaSinhVien}: ${soTien} VND (${sv.soNgayO} ngày)`
     );
   }
 
