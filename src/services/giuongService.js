@@ -20,14 +20,6 @@ class GiuongService {
       whereClause.MaPhong = filters.maPhong;
     }
 
-    if (filters.trangThai) {
-      if (filters.trangThai === "occupied") {
-        whereClause.DaCoNguoi = true;
-      } else if (filters.trangThai === "available") {
-        whereClause.DaCoNguoi = false;
-      }
-    }
-
     const { rows: giuongs, count: total } = await Giuong.findAndCountAll({
       where: whereClause,
       limit: parseInt(limit),

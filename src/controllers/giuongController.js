@@ -94,7 +94,10 @@ class GiuongController {
         );
       }
 
-      const createdBy = req.user.TenDangNhap;
+      const createdBy =
+        req.user.userType === "employee"
+          ? req.user.MaNhanVien
+          : req.user.MaSinhVien;
       const giuong = await giuongService.createGiuong(req.body, createdBy);
 
       return responseHelper.created(res, giuong, "Tạo giường thành công");
@@ -108,7 +111,10 @@ class GiuongController {
   async updateGiuong(req, res) {
     try {
       const { maGiuong } = req.params;
-      const updatedBy = req.user.TenDangNhap;
+      const updatedBy =
+        req.user.userType === "employee"
+          ? req.user.MaNhanVien
+          : req.user.MaSinhVien;
       const giuong = await giuongService.updateGiuong(
         maGiuong,
         req.body.TrangThai,
@@ -168,7 +174,10 @@ class GiuongController {
 
       const { maGiuong } = req.params;
       const { maSinhVien } = req.body;
-      const assignedBy = req.user.TenDangNhap;
+      const assignedBy =
+        req.user.userType === "employee"
+          ? req.user.MaNhanVien
+          : req.user.MaSinhVien;
 
       const giuong = await giuongService.assignStudentToBed(
         maGiuong,
@@ -203,7 +212,10 @@ class GiuongController {
       }
 
       const { maGiuong } = req.params;
-      const removedBy = req.user.TenDangNhap;
+      const removedBy =
+        req.user.userType === "employee"
+          ? req.user.MaNhanVien
+          : req.user.MaSinhVien;
 
       const giuong = await giuongService.removeStudentFromBed(
         maGiuong,
