@@ -535,7 +535,9 @@ class PaymentService {
     search = "",
     status = "",
     type = "",
+    method = "",
     month = "",
+    room = "",
     startDate = "",
     endDate = "",
   }) {
@@ -567,9 +569,23 @@ class PaymentService {
         whereConditions.LoaiThanhToan = type;
       }
 
-      // Filter by month (YYYY-MM format)
+      // Filter by payment method
+      if (method) {
+        if (method === "null") {
+          whereConditions.HinhThuc = null;
+        } else {
+          whereConditions.HinhThuc = method;
+        }
+      }
+
+      // Filter by month (MM/YYYY format)
       if (month) {
         whereConditions.ThangNam = month;
+      }
+
+      // Filter by room
+      if (room) {
+        whereConditions.MaPhong = room;
       }
 
       // Filter by date range
@@ -770,6 +786,8 @@ class PaymentService {
           MoTa: note
             ? `${payment.MoTa || ""}\nGhi chú phê duyệt: ${note}`
             : payment.MoTa,
+          NguoiCapNhat: adminId,
+          OrderCode: `TM_${payment.MaThanhToan}`,
         },
         { transaction }
       );

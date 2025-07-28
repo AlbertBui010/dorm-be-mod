@@ -123,7 +123,6 @@ class NhanVienService {
     if (parseInt(id) === parseInt(adminId) && TrangThai) {
       throw new AppError("Không thể cập nhật trạng thái của chính mình", 400);
     }
-    if (TrangThai) updateData.TrangThai = TrangThai;
 
     if (Email && Email !== nhanVien.Email) {
       const existing = await NhanVien.findOne({ where: { Email } });
@@ -137,6 +136,7 @@ class NhanVienService {
       NguoiCapNhat: adminId,
     };
 
+    if (TrangThai) updateData.TrangThai = TrangThai;
     if (TenDangNhap) updateData.TenDangNhap = TenDangNhap;
     if (Email) updateData.Email = Email;
 
@@ -145,30 +145,6 @@ class NhanVienService {
     }
 
     await nhanVien.update(updateData);
-
-    return { ...nhanVien.toJSON(), MatKhau: undefined };
-  }
-
-  async toggleStatus(id, adminId) {
-    const nhanVien = await NhanVien.findByPk(id);
-    if (!nhanVien) {
-      throw new AppError("Không tìm thấy nhân viên", 404);
-    }
-
-    // Cannot lock own account
-    if (parseInt(id) === parseInt(adminId)) {
-      throw new AppError("Không thể khóa tài khoản của chính mình", 400);
-    }
-
-    const newStatus =
-      nhanVien.TrangThai === NHAN_VIEN_TRANG_THAI.HOAT_DONG
-        ? NHAN_VIEN_TRANG_THAI.KHOA
-        : NHAN_VIEN_TRANG_THAI.HOAT_DONG;
-
-    await nhanVien.update({
-      TrangThai: newStatus,
-      NguoiCapNhat: adminId,
-    });
 
     return { ...nhanVien.toJSON(), MatKhau: undefined };
   }

@@ -5,8 +5,8 @@ const validateCreate = [
     .isInt({ min: 1 })
     .withMessage("MaPhong phải là số nguyên dương"),
   body("ThangNam")
-    .matches(/^\d{4}-(0[1-9]|1[0-2])$/)
-    .withMessage("ThangNam phải có định dạng YYYY-MM"),
+    .matches(/^(0[1-9]|1[0-2])\/\d{4}$/)
+    .withMessage("ThangNam phải có định dạng MM/YYYY (VD: 07/2025)"),
   body("SoDienCu").isFloat({ min: 0 }).withMessage("SoDienCu phải >= 0"),
   body("SoDienMoi")
     .isFloat({ min: 0 })

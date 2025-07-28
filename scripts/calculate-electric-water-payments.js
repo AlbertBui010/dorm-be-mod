@@ -44,8 +44,8 @@ async function calculateAndCreatePayments(maPhong, thangNam) {
   const tienNuoc = soNuoc * donGia.DonGiaNuoc;
   const tongTien = tienDien + tienNuoc;
 
-  // 5. Xác định khoảng thời gian tháng
-  const [year, month] = thangNam.split("-").map(Number);
+  // 5. Xác định khoảng thời gian tháng (format MM/YYYY)
+  const [month, year] = thangNam.split("/").map(Number);
   const startDate = new Date(year, month - 1, 1);
   const endDate = new Date(year, month - 1, getLastDayOfMonth(year, month));
 

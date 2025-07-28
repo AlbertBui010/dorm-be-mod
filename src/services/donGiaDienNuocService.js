@@ -2,6 +2,21 @@ const { DonGiaDienNuoc, ChiTietDienNuoc } = require("../models");
 const { Op } = require("sequelize");
 const sequelize = require("../config/database");
 
+// Helper function để kiểm tra ThangNam có trong khoảng thời gian không
+const isThangNamInRange = (thangNam, startDate, endDate) => {
+  if (!thangNam) return false;
+
+  // Parse ThangNam (MM/YYYY) thành Date
+  const [month, year] = thangNam.split("/").map(Number);
+  const chiSoDate = new Date(year, month - 1, 1);
+
+  // Parse startDate và endDate
+  const startDateObj = new Date(startDate);
+  const endDateObj = new Date(endDate);
+
+  return chiSoDate >= startDateObj && chiSoDate <= endDateObj;
+};
+
 const donGiaDienNuocService = {
   // Lấy tất cả đơn giá với phân trang
   async getAllDonGia(page = 1, limit = 10, search = "") {
@@ -418,20 +433,11 @@ const donGiaDienNuocService = {
     const startDate = donGia.NgayApDung;
     const endDate = donGia.NgayKetThuc;
 
-    // Convert thành format YYYY-MM để so sánh với ThangNam
-    const startMonth = startDate.substring(0, 7); // YYYY-MM
-    const endMonth = endDate
-      ? endDate.substring(0, 7)
-      : new Date().toISOString().substring(0, 7);
-
-    const relatedChiSo = await ChiSoDienNuoc.findOne({
-      where: {
-        ThangNam: {
-          [Op.gte]: startMonth,
-          [Op.lte]: endMonth,
-        },
-      },
-    });
+    // Kiểm tra xem có ChiSoDienNuoc nào trong khoảng thời gian áp dụng của đơn giá không
+    const allChiSo = await ChiSoDienNuoc.findAll();
+    const relatedChiSo = allChiSo.find((chiSo) =>
+      isThangNamInRange(chiSo.ThangNam, startDate, endDate)
+    );
 
     if (relatedChiSo) {
       return {
@@ -466,32 +472,20 @@ const donGiaDienNuocService = {
     const startDate = donGia.NgayApDung;
     const endDate = donGia.NgayKetThuc;
 
-    const startMonth = startDate.substring(0, 7);
-    const endMonth = endDate
-      ? endDate.substring(0, 7)
-      : new Date().toISOString().substring(0, 7);
+    // Lấy tất cả ChiSoDienNuoc và filter theo khoảng thời gian
+    const allChiSo = await ChiSoDienNuoc.findAll();
+    const relatedChiSo = allChiSo
+      .filter((chiSo) => isThangNamInRange(chiSo.ThangNam, startDate, endDate))
+      .slice(0, 5);
 
-    const relatedChiSo = await ChiSoDienNuoc.findAll({
-      where: {
-        ThangNam: {
-          [Op.gte]: startMonth,
-          [Op.lte]: endMonth,
-        },
-      },
-      limit: 5,
-    });
+    const totalCount = allChiSo.filter((chiSo) =>
+      isThangNamInRange(chiSo.ThangNam, startDate, endDate)
+    ).length;
 
     return {
       hasRelatedRecords: relatedChiSo.length > 0,
       relatedRecords: relatedChiSo,
-      totalCount: await ChiSoDienNuoc.count({
-        where: {
-          ThangNam: {
-            [Op.gte]: startMonth,
-            [Op.lte]: endMonth,
-          },
-        },
-      }),
+      totalCount,
     };
   },
 };

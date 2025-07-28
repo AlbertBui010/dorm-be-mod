@@ -1,4 +1,4 @@
-const { Phong, Giuong, SinhVien } = require("../models");
+const { Phong, Giuong } = require("../models");
 const { Op } = require("sequelize");
 const sequelize = require("../config/database");
 const { PHONG_STATUS } = require("../constants/phong");
@@ -111,25 +111,11 @@ class PhongService {
     // 3. Create room with initial values
     const phong = await Phong.create({
       ...phongData,
-      SoLuongHienTai: 0, // Initially empty
+      SoLuongHienTai: 0,
       TrangThai: phongData.TrangThai || PHONG_STATUS.HOAT_DONG,
       NgayTao: new Date(),
-      NguoiTao: createdBy,
+      NguoiTao: createdBy ? createdBy.toLowerCase() : null,
     });
-
-    // 4. Create beds for the room
-    const beds = [];
-    for (let i = 1; i <= phongData.SucChua; i++) {
-      beds.push({
-        MaPhong: phong.MaPhong,
-        SoGiuong: `G${i.toString().padStart(2, "0")}`, // G01, G02, etc.
-        DaCoNguoi: false,
-        NgayTao: new Date(),
-        NguoiTao: createdBy,
-      });
-    }
-
-    await Giuong.bulkCreate(beds);
 
     return await this.getPhongById(phong.MaPhong);
   }
@@ -161,54 +147,21 @@ class PhongService {
         throw new Error("Sức chứa phòng phải từ 1 đến 10 người");
       }
 
-      // Check if reducing capacity would affect current residents
-      if (updateData.SucChua < phong.SoLuongHienTai) {
+      // Kiểm tra xem sức chứa có giảm xuống dưới số lượng giường hiện tại không
+      const currentBeds = await Giuong.findAll({
+        where: { MaPhong: maPhong },
+      });
+      if (currentBeds.length > updateData.SucChua) {
         throw new Error(
           "Không thể giảm sức chứa xuống dưới số lượng hiện tại đang ở"
         );
       }
 
-      // Update beds if capacity changes
-      if (updateData.SucChua !== phong.SucChua) {
-        if (updateData.SucChua > phong.SucChua) {
-          // Add more beds
-          const newBeds = [];
-          for (let i = phong.SucChua + 1; i <= updateData.SucChua; i++) {
-            newBeds.push({
-              MaPhong: maPhong,
-              SoGiuong: `G${i.toString().padStart(2, "0")}`,
-              DaCoNguoi: false,
-              NgayTao: new Date(),
-              NguoiTao: updatedBy,
-            });
-          }
-          await Giuong.bulkCreate(newBeds);
-        } else {
-          // Remove beds (only if they're empty)
-          const bedsToRemove = await Giuong.findAll({
-            where: {
-              MaPhong: maPhong,
-              SoGiuong: {
-                [Op.gt]: `G${updateData.SucChua.toString().padStart(2, "0")}`,
-              },
-            },
-          });
-
-          for (const bed of bedsToRemove) {
-            if (bed.DaCoNguoi) {
-              throw new Error("Không thể xóa giường đang có người ở");
-            }
-          }
-
-          await Giuong.destroy({
-            where: {
-              MaPhong: maPhong,
-              SoGiuong: {
-                [Op.gt]: `G${updateData.SucChua.toString().padStart(2, "0")}`,
-              },
-            },
-          });
-        }
+      // Check if reducing capacity would affect current residents
+      if (updateData.SucChua < phong.SoLuongHienTai) {
+        throw new Error(
+          "Không thể giảm sức chứa xuống dưới số lượng hiện tại đang ở"
+        );
       }
     }
 
@@ -227,7 +180,7 @@ class PhongService {
     await phong.update({
       ...updateData,
       NgayCapNhat: new Date(),
-      NguoiCapNhat: updatedBy,
+      NguoiCapNhat: updatedBy ? updatedBy.toLowerCase() : null,
     });
 
     return await this.getPhongById(maPhong);

@@ -1,4 +1,4 @@
-const { SinhVien, DangKy, sequelize } = require("../models");
+const { SinhVien, DangKy, NhanVien, sequelize } = require("../models");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const { sendEmail } = require("../utils/email");
@@ -30,13 +30,18 @@ class RegistrationService {
         nguyenVong,
       } = registrationData;
 
-      // 1. Kiểm tra trùng lặp email
+      // 1. Kiểm tra trùng lặp email trong hệ thống (SinhVien, NhanVien)
       const existingSinhVienByEmail = await SinhVien.findOne({
         where: { Email: email },
         transaction,
       });
 
-      if (existingSinhVienByEmail) {
+      const existingNhanVienByEmail = await NhanVien.findOne({
+        where: { Email: email },
+        transaction,
+      });
+
+      if (existingSinhVienByEmail || existingNhanVienByEmail) {
         await transaction.rollback();
         return {
           success: false,
@@ -70,6 +75,27 @@ class RegistrationService {
               hoTen: existingSinhVienByMaSV.HoTen,
               email: existingSinhVienByMaSV.Email,
             },
+          };
+        }
+      }
+
+      if (soDienThoai) {
+        const existingSinhVienBySoDienThoai = await SinhVien.findOne({
+          where: { SoDienThoai: soDienThoai },
+          transaction,
+        });
+
+        const existingNhanVienBySoDienThoai = await NhanVien.findOne({
+          where: { SoDienThoai: soDienThoai },
+          transaction,
+        });
+
+        if (existingSinhVienBySoDienThoai || existingNhanVienBySoDienThoai) {
+          await transaction.rollback();
+          return {
+            success: false,
+            message:
+              "Số điện thoại đã tồn tại. Vui lòng kiểm tra lại hoặc đăng nhập nếu đây là tài khoản của bạn.",
           };
         }
       }

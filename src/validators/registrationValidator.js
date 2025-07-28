@@ -9,13 +9,14 @@ class RegistrationValidator {
     return [
       body("email")
         .notEmpty()
-        .withMessage("Email là bắt buộc.")
         .isEmail()
         .withMessage("Email không hợp lệ.")
         .normalizeEmail(),
 
       body("hoTen")
-        .matches(/^[a-zA-Z0-9\s]+$/)
+        .matches(
+          /[^a-z0-9A-Z_ÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂưăạảấầẩẫậắằẳẵặẹẻẽềềểỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪễếệỉịọỏốồổỗộớờởỡợụủứừỬỮỰỲỴÝỶỸửữựỳỵỷỹ]/
+        )
         .withMessage("Họ tên không được có ký tự đặc biệt.")
         .notEmpty()
         .withMessage("Họ tên là bắt buộc.")
@@ -24,7 +25,7 @@ class RegistrationValidator {
         .trim(),
 
       body("ngaySinh")
-        .optional()
+        .notEmpty()
         .isDate()
         .withMessage("Ngày sinh không hợp lệ.")
         .custom((value) => {
@@ -40,12 +41,12 @@ class RegistrationValidator {
         }),
 
       body("gioiTinh")
-        .optional()
+        .notEmpty()
         .isIn(["Nam", "Nữ", "Khác"])
         .withMessage("Giới tính phải là Nam, Nữ hoặc Khác."),
 
       body("soDienThoai")
-        .optional()
+        .notEmpty()
         .isMobilePhone("vi-VN")
         .withMessage("Số điện thoại không hợp lệ.")
         .isLength({ min: 10, max: 11 })
@@ -88,7 +89,7 @@ class RegistrationValidator {
         }),
 
       body("nguyenVong")
-        .optional()
+        .notEmpty()
         .isLength({ max: 500 })
         .withMessage("Nguyện vọng không được quá 500 ký tự.")
         .trim(),

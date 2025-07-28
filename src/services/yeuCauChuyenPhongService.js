@@ -1,6 +1,8 @@
 const { YeuCauChuyenPhong, SinhVien, Phong, Giuong } = require("../models");
 const { Op } = require("sequelize");
 const sequelize = require("../config/database");
+const { PHONG_STATUS } = require("../constants/phong");
+const { GIUONG_STATUS } = require("../constants/giuong");
 
 class YeuCauChuyenPhongService {
   /**
@@ -419,18 +421,6 @@ class YeuCauChuyenPhongService {
         throw new Error("Không tìm thấy phòng hiện tại của sinh viên");
       }
 
-      // Tìm giường hiện tại của sinh viên
-      const giuongHienTai = await Giuong.findOne({
-        where: {
-          MaSinhVienChiEm: yeuCau.MaSinhVien,
-        },
-        transaction,
-      });
-
-      if (!giuongHienTai) {
-        throw new Error("Không tìm thấy giường hiện tại của sinh viên");
-      }
-
       // Thực hiện chuyển phòng
       // 1. Cập nhật giường hiện tại
       await giuongHienTai.update(
@@ -481,17 +471,25 @@ class YeuCauChuyenPhongService {
       const LichSuOPhong = require("../models/LichSuOPhong");
 
       // Cập nhật lịch sử phòng cũ (kết thúc)
-      await LichSuOPhong.create(
-        {
+      const lichSuCu = await LichSuOPhong.findOne({
+        where: {
           MaSinhVien: yeuCau.MaSinhVien,
           MaPhong: giuongHienTaiCheck.MaPhong,
-          NgayBatDau: null, // Không có thông tin ngày bắt đầu của phòng cũ
-          NgayKetThuc: new Date().toISOString().split("T")[0], // Ngày kết thúc = ngày chuyển phòng
-          NgayTao: new Date(),
-          NguoiTao: approvedBy,
+          NgayKetThuc: null,
         },
-        { transaction }
-      );
+        order: [["NgayBatDau", "DESC"]],
+        transaction,
+      });
+      if (lichSuCu) {
+        await lichSuCu.update(
+          {
+            NgayKetThuc: new Date().toISOString().split("T")[0],
+            NgayCapNhat: new Date(),
+            NguoiCapNhat: approvedBy,
+          },
+          { transaction }
+        );
+      }
 
       // Tạo lịch sử phòng mới (bắt đầu)
       await LichSuOPhong.create(
@@ -660,7 +658,7 @@ class YeuCauChuyenPhongService {
   async getAvailableRoomsAndBeds() {
     const rooms = await Phong.findAll({
       where: {
-        TrangThai: "Hoạt động",
+        TrangThai: PHONG_STATUS.HOAT_DONG,
       },
       include: [
         {
@@ -670,6 +668,7 @@ class YeuCauChuyenPhongService {
             DaCoNguoi: false,
           },
           required: false,
+          TrangThai: GIUONG_STATUS.HOAT_DONG,
         },
       ],
       order: [["SoPhong", "ASC"]],
