@@ -1,4 +1,4 @@
-const { NhanVien } = require("../models");
+const { NhanVien, SinhVien } = require("../models");
 const {
   hashPassword,
   comparePassword,
@@ -7,6 +7,8 @@ const {
 const SinhVienAuthService = require("./sinhVienAuthService");
 const { Op } = require("sequelize");
 const { NHAN_VIEN_TRANG_THAI } = require("../constants/nhanVien");
+const crypto = require("crypto");
+const emailService = require("../utils/email");
 
 class AuthService {
   // Handles both employees and students
@@ -113,6 +115,91 @@ class AuthService {
     }
 
     return user;
+  }
+
+  // Forgot Password functionality for Students only
+  async forgotPassword(email) {
+    try {
+      // Find student by email
+      const sinhVien = await SinhVien.findOne({
+        where: {
+          Email: email,
+          EmailDaXacThuc: true, // Only for verified accounts
+        },
+      });
+
+      if (!sinhVien) {
+        throw new Error("Email không tồn tại hoặc chưa được xác thực");
+      }
+
+      // Generate reset token
+      const resetToken = crypto.randomBytes(32).toString("hex");
+
+      // Update student with reset token
+      await sinhVien.update({
+        MaXacThucEmail: `reset_${resetToken}`, // Prefix to distinguish from verification
+        NgayCapNhat: new Date(),
+        NguoiCapNhat: "SYSTEM",
+      });
+
+      // Send reset password email
+      await emailService.sendPasswordResetEmail(
+        email,
+        sinhVien.HoTen,
+        resetToken
+      );
+
+      return {
+        success: true,
+        message:
+          "Email reset mật khẩu đã được gửi. Vui lòng kiểm tra hộp thư của bạn.",
+      };
+    } catch (error) {
+      console.error("Lỗi gửi email reset password:", error);
+      throw new Error(
+        error.message || "Có lỗi xảy ra khi gửi email reset password"
+      );
+    }
+  }
+
+  async resetPassword(email, token, newPassword) {
+    try {
+      // Find student with reset token
+      const sinhVien = await SinhVien.findOne({
+        where: {
+          Email: email,
+          MaXacThucEmail: `reset_${token}`,
+          EmailDaXacThuc: true,
+        },
+      });
+
+      if (!sinhVien) {
+        throw new Error("Mã reset không hợp lệ hoặc đã hết hạn");
+      }
+
+      // Hash new password
+      const hashedPassword = await hashPassword(newPassword);
+
+      // Update password and clear reset token
+      await sinhVien.update({
+        MatKhau: hashedPassword,
+        MaXacThucEmail: null, // Clear reset token
+        NgayCapNhat: new Date(),
+        NguoiCapNhat: "SYSTEM",
+      });
+
+      // Send confirmation email
+      await emailService.sendPasswordResetConfirmation(email, sinhVien.HoTen);
+
+      return {
+        success: true,
+        message:
+          "Mật khẩu đã được reset thành công. Bạn có thể đăng nhập với mật khẩu mới.",
+      };
+    } catch (error) {
+      console.error("Lỗi reset password:", error);
+      throw new Error(error.message || "Có lỗi xảy ra khi reset password");
+    }
   }
 }
 

@@ -1,11 +1,16 @@
 const express = require("express");
 const AuthController = require("../controllers/authController");
+const ForgotPasswordController = require("../controllers/forgotPasswordController");
 const { authenticate, authorizeStudent } = require("../middleware/auth");
 const { handleValidationErrors } = require("../middleware/validation");
 const {
   loginValidation,
   changePasswordValidation,
 } = require("../validators/authValidator");
+const {
+  validateForgotPassword,
+  validateResetPassword,
+} = require("../validators/forgotPasswordValidator");
 
 const router = express.Router();
 
@@ -15,6 +20,19 @@ router.post(
   loginValidation,
   handleValidationErrors,
   AuthController.login
+);
+
+// Forgot password routes (public)
+router.post(
+  "/forgot-password",
+  validateForgotPassword,
+  ForgotPasswordController.forgotPassword
+);
+
+router.post(
+  "/reset-password",
+  validateResetPassword,
+  ForgotPasswordController.resetPassword
 );
 
 // Protected routes

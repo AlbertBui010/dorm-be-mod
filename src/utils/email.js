@@ -132,6 +132,38 @@ class EmailService {
   }
 
   /**
+   * Gửi email reset mật khẩu
+   */
+  async sendPasswordResetEmail(to, userName, resetToken) {
+    const resetLink = `${
+      process.env.FRONTEND_URL
+    }/reset-password?email=${encodeURIComponent(to)}&token=${resetToken}`;
+
+    const emailOptions = {
+      to: to,
+      subject: "Reset mật khẩu - Ký túc xá STU",
+      html: this.getPasswordResetEmailTemplate(userName, resetToken, resetLink),
+    };
+
+    return await this.sendEmail(emailOptions);
+  }
+
+  /**
+   * Gửi email xác nhận reset mật khẩu thành công
+   */
+  async sendPasswordResetConfirmation(to, userName) {
+    const loginLink = `${process.env.FRONTEND_URL}/login`;
+
+    const emailOptions = {
+      to: to,
+      subject: "Mật khẩu đã được reset thành công - Ký túc xá STU",
+      html: this.getPasswordResetConfirmationTemplate(userName, loginLink),
+    };
+
+    return await this.sendEmail(emailOptions);
+  }
+
+  /**
    * Gửi email thông báo mật khẩu đã được thiết lập
    */
   async sendPasswordSetupConfirmation(to, userName, maSinhVien) {
@@ -220,6 +252,140 @@ class EmailService {
             📧 Email: ktx@stu.edu.vn | ☎️ Hotline: 0929812000</p>
             
             <p>Nếu bạn không thực hiện đăng ký này, vui lòng bỏ qua email này hoặc liên hệ với chúng tôi để được hỗ trợ.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+  }
+
+  /**
+   * Template email reset mật khẩu
+   */
+  getPasswordResetEmailTemplate(userName, resetToken, resetLink) {
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Reset mật khẩu - Ký túc xá STU</title>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background-color: #dc2626; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+          .content { background-color: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px; }
+          .button { display: inline-block; background-color: #dc2626; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 20px 0; }
+          .button:hover { background-color: #b91c1c; }
+          .token-box { background-color: #fee2e2; border: 1px solid #dc2626; padding: 15px; border-radius: 6px; margin: 15px 0; word-break: break-all; font-family: monospace; text-align: center; font-size: 18px; font-weight: bold; }
+          .warning-box { background-color: #fef3cd; border: 1px solid #facc15; padding: 15px; border-radius: 6px; margin: 20px 0; }
+          .footer { margin-top: 30px; font-size: 12px; color: #6b7280; border-top: 1px solid #e5e7eb; padding-top: 20px; }
+          .logo { font-size: 24px; font-weight: bold; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <div class="logo">🏫 Trường Đại học Công Nghệ Sài Gòn</div>
+            <h1 style="margin: 10px 0 0 0; font-size: 20px;">🔐 Reset mật khẩu</h1>
+          </div>
+          
+          <div class="content">
+            <h2 style="color: #dc2626; margin-top: 0;">Xin chào ${userName}!</h2>
+            
+            <p>Chúng tôi nhận được yêu cầu reset mật khẩu cho tài khoản của bạn tại <strong>Ký túc xá STU</strong>.</p>
+            
+            <p>Để reset mật khẩu, vui lòng sử dụng mã xác thực bên dưới hoặc nhấp vào nút reset:</p>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${resetLink}" class="button">🔐 Reset Mật khẩu</a>
+            </div>
+            
+            <p><strong>Mã xác thực của bạn:</strong></p>
+            <div class="token-box">${resetToken}</div>
+            
+            <div class="warning-box">
+              <p style="margin: 0; color: #92400e;"><strong>⚠️ Lưu ý quan trọng:</strong></p>
+              <ul style="margin: 10px 0 0 0; color: #92400e;">
+                <li>Mã xác thực này sẽ hết hạn sau <strong>30 phút</strong></li>
+                <li>Nếu bạn không yêu cầu reset mật khẩu, vui lòng bỏ qua email này</li>
+                <li>Để bảo mật, không chia sẻ mã này với ai khác</li>
+              </ul>
+            </div>
+            
+            <p>Sau khi reset mật khẩu thành công, bạn có thể đăng nhập với mật khẩu mới.</p>
+          </div>
+          
+          <div class="footer">
+            <p><strong>🏢 Phòng Quản lý Ký túc xá</strong><br>
+            Trường Đại học Công Nghệ Sài Gòn<br>
+            📧 Email: ktx@stu.edu.vn | ☎️ Hotline: 0929812000</p>
+            
+            <p>Nếu bạn gặp khó khăn, vui lòng liên hệ với chúng tôi để được hỗ trợ.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+  }
+
+  /**
+   * Template email xác nhận reset mật khẩu thành công
+   */
+  getPasswordResetConfirmationTemplate(userName, loginLink) {
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Mật khẩu đã được reset - Ký túc xá STU</title>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background-color: #16a34a; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+          .content { background-color: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px; }
+          .button { display: inline-block; background-color: #16a34a; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 20px 0; }
+          .button:hover { background-color: #15803d; }
+          .success-box { background-color: #dcfce7; border: 1px solid #16a34a; padding: 15px; border-radius: 6px; margin: 15px 0; }
+          .footer { margin-top: 30px; font-size: 12px; color: #6b7280; border-top: 1px solid #e5e7eb; padding-top: 20px; }
+          .logo { font-size: 24px; font-weight: bold; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <div class="logo">🏫 Trường Đại học Công Nghệ Sài Gòn</div>
+            <h1 style="margin: 10px 0 0 0; font-size: 20px;">✅ Reset mật khẩu thành công!</h1>
+          </div>
+          
+          <div class="content">
+            <h2 style="color: #16a34a; margin-top: 0;">Xin chào ${userName}!</h2>
+            
+            <div class="success-box">
+              <p style="margin: 0; color: #166534;"><strong>🎉 Mật khẩu của bạn đã được reset thành công!</strong></p>
+            </div>
+            
+            <p>Bạn có thể đăng nhập vào hệ thống với mật khẩu mới của mình.</p>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${loginLink}" class="button">🔑 Đăng nhập ngay</a>
+            </div>
+            
+            <p><strong>🔐 Một số lưu ý bảo mật:</strong></p>
+            <ul>
+              <li>Hãy sử dụng mật khẩu mạnh và bảo mật</li>
+              <li>Không chia sẻ mật khẩu với người khác</li>
+              <li>Thay đổi mật khẩu định kỳ để tăng bảo mật</li>
+            </ul>
+          </div>
+          
+          <div class="footer">
+            <p><strong>🏢 Phòng Quản lý Ký túc xá</strong><br>
+            Trường Đại học Công Nghệ Sài Gòn<br>
+            📧 Email: ktx@stu.edu.vn | ☎️ Hotline: 0929812000</p>
+            
+            <p>Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi!</p>
           </div>
         </div>
       </body>
@@ -536,4 +702,10 @@ module.exports = {
     }),
   sendRejectionEmail: ({ email, hoTen, lyDoTuChoi }) =>
     emailService.sendRejectionEmail({ email, hoTen, lyDoTuChoi }),
+
+  // Forgot password methods
+  sendPasswordResetEmail: (email, userName, resetToken) =>
+    emailService.sendPasswordResetEmail(email, userName, resetToken),
+  sendPasswordResetConfirmation: (email, userName) =>
+    emailService.sendPasswordResetConfirmation(email, userName),
 };
