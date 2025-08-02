@@ -131,7 +131,7 @@ class RegistrationApprovalService {
         ],
         limit,
         offset,
-        order: [["NgayTao", "DESC"]],
+        order: [["NgayTao", "ASC"]],
         attributes: [
           "MaDangKy",
           "MaSinhVien",
