@@ -37,9 +37,21 @@ const paginationResponse = (res, data, pagination, message = "Success") => {
     },
   });
 };
-
+const throwValidationError = (field, message, value = null) => {
+  const error = new Error("Dữ liệu không hợp lệ");
+  error.statusCode = 400;
+  error.errors = [
+    {
+      field,
+      message,
+      value,
+    },
+  ];
+  throw error;
+};
 module.exports = {
   successResponse,
   errorResponse,
   paginationResponse,
+  throwValidationError,
 };

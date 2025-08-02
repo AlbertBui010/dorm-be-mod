@@ -35,7 +35,31 @@ const changePasswordValidation = [
   }),
 ];
 
+const forgotPasswordValidation = [
+  body("email")
+    .notEmpty()
+    .withMessage("Email không được để trống")
+    .isEmail()
+    .withMessage("Email không hợp lệ"),
+];
+
+const resetPasswordValidation = [
+  body("token")
+    .notEmpty()
+    .withMessage("Token không được để trống"),
+
+  body("newPassword")
+    .isLength({ min: 6 })
+    .withMessage("Mật khẩu mới phải có ít nhất 6 ký tự")
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
+    .withMessage(
+      "Mật khẩu mới phải chứa ít nhất 1 chữ hoa, 1 chữ thường và 1 số"
+    ),
+];
+
 module.exports = {
   loginValidation,
   changePasswordValidation,
+  forgotPasswordValidation,
+  resetPasswordValidation,
 };
