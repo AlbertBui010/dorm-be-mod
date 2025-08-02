@@ -87,6 +87,37 @@ class AuthController {
       next(error);
     }
   }
+
+  // Password reset endpoints (public)
+  async sendPasswordResetEmail(req, res, next) {
+    try {
+      const { email } = req.body;
+      const result = await SinhVienAuthService.sendPasswordResetEmail(email);
+      return successResponse(res, result, "Email khôi phục mật khẩu đã được gửi");
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async verifyResetToken(req, res, next) {
+    try {
+      const { token } = req.params;
+      const result = await SinhVienAuthService.verifyResetToken(token);
+      return successResponse(res, result, "Token hợp lệ");
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async resetPassword(req, res, next) {
+    try {
+      const { token, newPassword } = req.body;
+      const result = await SinhVienAuthService.resetPassword(token, newPassword);
+      return successResponse(res, result, "Đặt lại mật khẩu thành công");
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 module.exports = new AuthController();

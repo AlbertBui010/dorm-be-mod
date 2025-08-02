@@ -42,6 +42,14 @@ const SinhVien = sequelize.define(
       type: DataTypes.STRING(255),
       allowNull: true,
     },
+    MaResetMatKhau: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+    },
+    NgayHetHanResetMatKhau: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
     TrangThai: {
       type: DataTypes.STRING(20),
       allowNull: true,

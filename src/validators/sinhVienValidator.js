@@ -49,9 +49,10 @@ const createSinhVienValidation = [
       STUDENT_STATUS.DANG_O,
       STUDENT_STATUS.VI_PHAM,
       STUDENT_STATUS.CHO_NHAN_PHONG,
+      STUDENT_STATUS.KHONG_NHAN_PHONG,
     ])
     .withMessage(
-      "Trạng thái phải là DANG_KY hoặc NGUNG_O hoặc DANG_O hoặc VI_PHAM hoặc CHO_NHAN_PHONG"
+      "Trạng thái phải là DANG_KY hoặc NGUNG_O hoặc DANG_O hoặc VI_PHAM hoặc CHO_NHAN_PHONG hoặc KHONG_NHAN_PHONG"
     ),
 ];
 
@@ -103,9 +104,10 @@ const updateSinhVienValidation = [
       STUDENT_STATUS.DANG_O,
       STUDENT_STATUS.VI_PHAM,
       STUDENT_STATUS.CHO_NHAN_PHONG,
+      STUDENT_STATUS.KHONG_NHAN_PHONG,
     ])
     .withMessage(
-      "Trạng thái phải là DANG_KY hoặc NGUNG_O hoặc DANG_O hoặc VI_PHAM hoặc CHO_NHAN_PHONG"
+      "Trạng thái phải là DANG_KY hoặc NGUNG_O hoặc DANG_O hoặc VI_PHAM hoặc CHO_NHAN_PHONG hoặc KHONG_NHAN_PHONG"
     ),
 ];
 

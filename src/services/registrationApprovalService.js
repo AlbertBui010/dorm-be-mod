@@ -131,7 +131,7 @@ class RegistrationApprovalService {
         ],
         limit,
         offset,
-        order: [["NgayTao", "DESC"]],
+        order: [["NgayTao", "ASC"]],
         attributes: [
           "MaDangKy",
           "MaSinhVien",
@@ -621,6 +621,7 @@ class RegistrationApprovalService {
           maGiuong: bed.SoGiuong, // Gửi số giường thay vì mã
           ngayNhanPhong: registration.NgayNhanPhong,
         });
+        // Có thể bổ sung thêm: nhấn mạnh sinh viên phải đến văn phòng ký túc xá để xác thực nhận phòng
       } catch (emailError) {
         console.error("Error sending approval email:", emailError);
         // Không rollback transaction vì đăng ký đã được duyệt thành công

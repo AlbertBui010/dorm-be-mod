@@ -12,7 +12,7 @@ const chiSoDienNuocRoutes = require("./chiSoDienNuocRoutes");
 const yeuCauChuyenPhongRoutes = require("./yeuCauChuyenPhongRoutes");
 const lichSuOPhongRoutes = require("./lichSuOPhongRoutes");
 const chiTietDienNuocRoutes = require("./chiTietDienNuocRoutes");
-
+const lydotuchoiRoutes = require("./lydotuchoiRoutes");
 const router = express.Router();
 
 // Health check endpoint
@@ -38,5 +38,6 @@ router.use("/chi-so-dien-nuoc", chiSoDienNuocRoutes);
 router.use("/yeu-cau-chuyen-phong", yeuCauChuyenPhongRoutes);
 router.use("/lich-su-o-phong", lichSuOPhongRoutes);
 router.use("/chi-tiet-dien-nuoc", chiTietDienNuocRoutes);
+router.use("/ly-do-tu-choi",lydotuchoiRoutes);
 
 module.exports = router;

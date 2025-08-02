@@ -4,6 +4,7 @@ const { Op } = require("sequelize");
 const { STUDENT_STATUS } = require("../constants/sinhvien");
 const LichSuOPhong = require("../models/LichSuOPhong");
 const { STUDENT_ROOM_HISTORY } = require("../constants/LichSuOPhong");
+const { sendCheckInSuccessEmail } = require("../utils/email");
 
 class SinhVienService {
   async getAllSinhVien(filters = {}, pagination = {}) {
@@ -370,6 +371,24 @@ class SinhVienService {
       NgayCapNhat: new Date(),
       NguoiCapNhat: updatedBy,
     });
+
+    // Gửi email xác nhận nhận phòng thành công
+    try {
+      // Lấy thông tin phòng, giường, ngày nhận phòng từ sinh viên
+      const phong = sinhvien.MaPhong ? await sinhvien.getPhong() : null;
+      const giuong = sinhvien.MaGiuong ? await sinhvien.getGiuong() : null;
+      const ngayNhanPhong = sinhvien.NgayVao || new Date();
+      await sendCheckInSuccessEmail({
+        email: sinhvien.Email,
+        hoTen: sinhvien.HoTen,
+        maSinhVien: sinhvien.MaSinhVien,
+        maPhong: phong ? phong.SoPhong : '',
+        maGiuong: giuong ? giuong.SoGiuong : '',
+        ngayNhanPhong,
+      });
+    } catch (emailError) {
+      console.error("Error sending check-in success email:", emailError);
+    }
 
     return await this.getSinhVienById(maSinhVien);
   }

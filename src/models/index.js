@@ -12,6 +12,7 @@ const ChiSoDienNuoc = require("./ChiSoDienNuoc");
 const ChiTietDienNuoc = require("./ChiTietDienNuoc");
 const ThanhToan = require("./ThanhToan");
 const YeuCauChuyenPhong = require("./YeuCauChuyenPhong");
+const LyDoTuChoi = require("./LyDoTuChoi");
 
 // Define associations
 // Phong - Giuong (One to Many)

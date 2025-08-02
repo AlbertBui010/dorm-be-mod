@@ -365,7 +365,7 @@ class EmailService {
     loginLink
   ) {
     const formattedDate = new Date(ngayNhanPhong).toLocaleDateString("vi-VN");
-
+    const soNgayChoPhep = 2;
     return `
       <!DOCTYPE html>
       <html>
@@ -380,6 +380,7 @@ class EmailService {
           .content { background-color: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px; }
           .button { display: inline-block; background-color: #059669; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 20px 0; }
           .info-box { background-color: #dcfce7; border: 1px solid #059669; padding: 15px; border-radius: 6px; margin: 20px 0; }
+          .alert-box { background-color: #fef3c7; border: 1px solid #f59e0b; padding: 15px; border-radius: 6px; margin: 20px 0; color: #92400e; }
           .footer { text-align: center; margin-top: 30px; padding: 20px; background-color: #f3f4f6; border-radius: 6px; font-size: 14px; color: #6b7280; }
         </style>
       </head>
@@ -388,12 +389,9 @@ class EmailService {
           <div class="header">
             <h1>🎉 Chúc mừng! Đăng ký được duyệt</h1>
           </div>
-          
           <div class="content">
             <p>Kính chào <strong>${hoTen}</strong>,</p>
-            
             <p>Chúng tôi vui mừng thông báo rằng đăng ký ký túc xá của bạn đã được <strong>DUYỆT THÀNH CÔNG</strong>!</p>
-            
             <div class="info-box">
               <h3>📋 Thông tin phòng ở được phân bổ:</h3>
               <ul>
@@ -403,9 +401,14 @@ class EmailService {
                 <li><strong>Ngày nhận phòng:</strong> ${formattedDate}</li>
               </ul>
             </div>
-            
+            <div class="alert-box">
+              <strong>⚠️ Lưu ý quan trọng:</strong>
+              <ul style="margin: 10px 0 0 20px;">
+                <li>Bạn <b>bắt buộc phải đến Văn phòng Ký túc xá để xác minh nhận phòng vào ngày nhận phòng dự kiến (<b>${formattedDate}</b>) đã chọn, chậm nhất là trong vòng <u>${soNgayChoPhep} ngày</u> kể từ ngày nhận phòng dự kiến.</li>
+                <li>Nếu quá thời hạn này mà bạn chưa xác minh nhận phòng, đăng ký sẽ bị <b>hủy</b> và phòng/giường sẽ được trả lại hệ thống.</li>
+              </ul>
+            </div>
             <p>Bạn có thể đăng nhập vào hệ thống để xem chi tiết và theo dõi thông tin thanh toán:</p>
-            
             <div style="text-align: center; margin: 30px 0;">
               <a href="${loginLink}" class="button">🔑 Đăng nhập hệ thống</a>
             </div>
@@ -506,6 +509,165 @@ class EmailService {
       </html>
     `;
   }
+
+  /**
+   * Gửi email xác nhận nhận phòng thành công
+   */
+  async sendCheckInSuccessEmail({
+    email,
+    hoTen,
+    maSinhVien,
+    maPhong,
+    maGiuong,
+    ngayNhanPhong,
+  }) {
+    const loginLink = `${process.env.FRONTEND_URL}/login`;
+    const emailOptions = {
+      to: email,
+      subject: '🎉 Xác nhận nhận phòng thành công - Ký túc xá STU',
+      html: this.getCheckInSuccessEmailTemplate(
+        hoTen,
+        maSinhVien,
+        maPhong,
+        maGiuong,
+        ngayNhanPhong,
+        loginLink
+      ),
+    };
+    return await this.sendEmail(emailOptions);
+  }
+
+  /**
+   * Template email xác nhận nhận phòng thành công
+   */
+  getCheckInSuccessEmailTemplate(hoTen, maSinhVien, tenPhong, soGiuong, ngayNhanPhong, loginLink) {
+    const formattedDate = new Date(ngayNhanPhong).toLocaleDateString('vi-VN');
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Xác nhận nhận phòng thành công</title>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background-color: #2563eb; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+          .content { background-color: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px; }
+          .button { display: inline-block; background-color: #2563eb; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 20px 0; }
+          .info-box { background-color: #e0f2fe; border: 1px solid #2563eb; padding: 15px; border-radius: 6px; margin: 20px 0; }
+          .footer { text-align: center; margin-top: 30px; padding: 20px; background-color: #f3f4f6; border-radius: 6px; font-size: 14px; color: #6b7280; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>🎉 Chúc mừng! Bạn đã xác thực nhận phòng thành công</h1>
+          </div>
+          <div class="content">
+            <p>Kính chào <strong>${hoTen}</strong>,</p>
+            <p>Bạn đã xác nhận nhận phòng thành công tại ký túc xá <strong>Trường Đại học Công Nghệ Sài Gòn</strong>.</p>
+            <div class="info-box">
+              <h3>📋 Thông tin phòng ở:</h3>
+              <ul>
+                <li><strong>Mã sinh viên:</strong> ${maSinhVien}</li>
+                <li><strong>Phòng:</strong> ${tenPhong}</li>
+                <li><strong>Giường:</strong> ${soGiuong}</li>
+                <li><strong>Ngày nhận phòng:</strong> ${formattedDate}</li>
+              </ul>
+            </div>
+            <p>Bạn có thể đăng nhập vào hệ thống để theo dõi thông tin cá nhân, hợp đồng và các thông báo mới nhất:</p>
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${loginLink}" class="button">🔑 Đăng nhập hệ thống</a>
+            </div>
+            <p>Chúc bạn có trải nghiệm tuyệt vời tại ký túc xá!</p>
+          </div>
+          <div class="footer">
+            <p><strong>🏢 Phòng Quản lý Ký túc xá</strong><br>
+            Trường Đại học Công Nghệ Sài Gòn<br>
+            📧 Email: ktx@stu.edu.vn | ☎️ Hotline: 0929812000</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+  }
+
+  /**
+   * Gửi email thông báo không nhận phòng (bị hủy)
+   */
+  async sendCancelDueToNoCheckInEmail({
+    email,
+    hoTen,
+    maSinhVien,
+    maPhong,
+    maGiuong,
+    ngayNhanPhong,
+    soNgayChoPhep = 2
+  }) {
+    const emailOptions = {
+      to: email,
+      subject: 'Thông báo hủy đăng ký ký túc xá do không nhận phòng',
+      html: this.getCancelDueToNoCheckInEmailTemplate(
+        hoTen,
+        maSinhVien,
+        maPhong,
+        maGiuong,
+        ngayNhanPhong,
+        soNgayChoPhep
+      ),
+    };
+    return await this.sendEmail(emailOptions);
+  }
+
+  getCancelDueToNoCheckInEmailTemplate(hoTen, maSinhVien, tenPhong, soGiuong, ngayNhanPhong, soNgayChoPhep) {
+    const formattedDate = new Date(ngayNhanPhong).toLocaleDateString('vi-VN');
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Thông báo hủy đăng ký ký túc xá</title>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background-color: #dc2626; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+          .content { background-color: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px; }
+          .info-box { background-color: #fecaca; border: 1px solid #dc2626; padding: 15px; border-radius: 6px; margin: 20px 0; }
+          .footer { text-align: center; margin-top: 30px; padding: 20px; background-color: #f3f4f6; border-radius: 6px; font-size: 14px; color: #6b7280; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>❌ Đăng ký ký túc xá bị hủy</h1>
+          </div>
+          <div class="content">
+            <p>Kính chào <strong>${hoTen}</strong>,</p>
+            <div class="info-box">
+              <h3>📝 Lý do hủy:</h3>
+              <p>Bạn đã không đến nhận phòng trong vòng <strong>${soNgayChoPhep} ngày</strong> kể từ ngày nhận phòng dự kiến (<strong>${formattedDate}</strong>).</p>
+              <p>Do đó, đăng ký ký túc xá của bạn đã bị <strong>hủy</strong> và phòng/giường đã được trả lại hệ thống.</p>
+            </div>
+            <ul>
+              <li><strong>Mã sinh viên:</strong> ${maSinhVien}</li>
+              <li><strong>Phòng:</strong> ${tenPhong}</li>
+              <li><strong>Giường:</strong> ${soGiuong}</li>
+              <li><strong>Ngày nhận phòng dự kiến:</strong> ${formattedDate}</li>
+            </ul>
+            <p>Nếu bạn có thắc mắc hoặc cần hỗ trợ, vui lòng liên hệ Phòng Quản lý Ký túc xá.</p>
+          </div>
+          <div class="footer">
+            <p><strong>🏢 Phòng Quản lý Ký túc xá</strong><br>
+            Trường Đại học Công Nghệ Sài Gòn<br>
+            📧 Email: ktx@stu.edu.vn | ☎️ Hotline: 0929812000</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+  }
 }
 
 // Khởi tạo service
@@ -536,4 +698,38 @@ module.exports = {
     }),
   sendRejectionEmail: ({ email, hoTen, lyDoTuChoi }) =>
     emailService.sendRejectionEmail({ email, hoTen, lyDoTuChoi }),
+  sendCheckInSuccessEmail: ({
+    email,
+    hoTen,
+    maSinhVien,
+    maPhong,
+    maGiuong,
+    ngayNhanPhong,
+  }) =>
+    emailService.sendCheckInSuccessEmail({
+      email,
+      hoTen,
+      maSinhVien,
+      maPhong,
+      maGiuong,
+      ngayNhanPhong,
+    }),
+  sendCancelDueToNoCheckInEmail: ({
+    email,
+    hoTen,
+    maSinhVien,
+    maPhong,
+    maGiuong,
+    ngayNhanPhong,
+    soNgayChoPhep
+  }) =>
+    emailService.sendCancelDueToNoCheckInEmail({
+      email,
+      hoTen,
+      maSinhVien,
+      maPhong,
+      maGiuong,
+      ngayNhanPhong,
+      soNgayChoPhep
+    }),
 };

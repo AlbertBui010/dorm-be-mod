@@ -5,6 +5,8 @@ const { handleValidationErrors } = require("../middleware/validation");
 const {
   loginValidation,
   changePasswordValidation,
+  forgotPasswordValidation,
+  resetPasswordValidation,
 } = require("../validators/authValidator");
 
 const router = express.Router();
@@ -15,6 +17,21 @@ router.post(
   loginValidation,
   handleValidationErrors,
   AuthController.login
+);
+
+// Password reset routes (public)
+router.post(
+  "/forgot-password",
+  forgotPasswordValidation,
+  handleValidationErrors,
+  AuthController.sendPasswordResetEmail
+);
+router.get("/verify-reset-token/:token", AuthController.verifyResetToken);
+router.post(
+  "/reset-password",
+  resetPasswordValidation,
+  handleValidationErrors,
+  AuthController.resetPassword
 );
 
 // Protected routes
