@@ -1,8 +1,6 @@
-const { Op } = require("sequelize");
+const { Op, Sequelize } = require("sequelize");
 const sequelize = require("../config/database");
-const ThanhToan = require("../models/ThanhToan");
-const SinhVien = require("../models/SinhVien");
-const Phong = require("../models/Phong");
+const { ThanhToan, SinhVien, Phong } = require("../models");
 const payos = require("../utils/payos");
 const crypto = require("crypto");
 const { PAYMENT_METHOD, PAYMENT_STATUS } = require("../constants/payment");
@@ -620,7 +618,20 @@ class PaymentService {
         include: includeConditions,
         limit,
         offset,
-        order: [["NgayTao", "DESC"]],
+        order: [
+          // Ưu tiên thanh toán tiền mặt chờ xác nhận lên đầu
+          [
+            Sequelize.literal(
+              `CASE 
+                WHEN "ThanhToan"."TrangThai" = 'CHO_XAC_NHAN' AND "ThanhToan"."HinhThuc" = 'TIEN_MAT' THEN 0
+                WHEN "ThanhToan"."TrangThai" = 'CHO_XAC_NHAN' THEN 1
+                ELSE 2
+              END`
+            ),
+            "ASC",
+          ],
+          ["NgayTao", "DESC"],
+        ],
       });
 
       return {
