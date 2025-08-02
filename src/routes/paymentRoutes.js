@@ -7,6 +7,29 @@ const {
   authorizeAdmin,
 } = require("../middleware/auth");
 
+// ===== PUBLIC ROUTES (Must be first to avoid middleware conflicts) =====
+
+/**
+ * @route POST /api/payments/webhook/payos
+ * @desc Webhook xử lý kết quả thanh toán từ PayOS
+ * @access Public (PayOS Webhook)
+ */
+router.post("/webhook/payos", paymentController.handlePayOSWebhook);
+
+/**
+ * @route GET /api/payments/return
+ * @desc Redirect handler cho PayOS return URL
+ * @access Public
+ */
+router.get("/return", paymentController.handlePaymentReturn);
+
+/**
+ * @route GET /api/payments/cancel
+ * @desc Cancel handler cho PayOS cancel URL
+ * @access Public
+ */
+router.get("/cancel", paymentController.handlePaymentCancel);
+
 // ===== ADMIN ROUTES (Must be before student routes to avoid conflicts) =====
 
 /**
@@ -142,26 +165,5 @@ router.post(
   authorizeStudent,
   paymentController.processCashPayment
 );
-
-/**
- * @route POST /api/payments/webhook/payos
- * @desc Webhook xử lý kết quả thanh toán từ PayOS
- * @access Public (PayOS Webhook)
- */
-router.post("/webhook/payos", paymentController.handlePayOSWebhook);
-
-/**
- * @route GET /api/payments/return
- * @desc Redirect handler cho PayOS return URL
- * @access Public
- */
-router.get("/return", paymentController.handlePaymentReturn);
-
-/**
- * @route GET /api/payments/cancel
- * @desc Cancel handler cho PayOS cancel URL
- * @access Public
- */
-router.get("/cancel", paymentController.handlePaymentCancel);
 
 module.exports = router;

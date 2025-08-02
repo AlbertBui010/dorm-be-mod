@@ -867,6 +867,57 @@ class PaymentService {
       };
     }
   }
+
+  /**
+   * Hủy thanh toán - cập nhật trạng thái về CHUA_THANH_TOAN
+   */
+  async cancelPayment(orderCode) {
+    const transaction = await sequelize.transaction();
+    try {
+      // Tìm thanh toán theo orderCode
+      const payment = await ThanhToan.findOne({
+        where: {
+          OrderCode: orderCode,
+          TrangThai: PAYMENT_STATUS.DANG_CHO_THANH_TOAN,
+        },
+        transaction,
+      });
+
+      if (!payment) {
+        await transaction.rollback();
+        return {
+          success: false,
+          message: "Không tìm thấy giao dịch hoặc giao dịch không thể hủy",
+        };
+      }
+
+      // Cập nhật trạng thái về CHUA_THANH_TOAN
+      await payment.update(
+        {
+          TrangThai: PAYMENT_STATUS.CHUA_THANH_TOAN,
+          OrderCode: null, // Xóa mã giao dịch
+          NgayCapNhat: new Date(),
+        },
+        { transaction }
+      );
+
+      await transaction.commit();
+
+      return {
+        success: true,
+        data: payment,
+        message: "Hủy thanh toán thành công",
+      };
+    } catch (error) {
+      await transaction.rollback();
+      console.error("Error in cancelPayment:", error);
+      return {
+        success: false,
+        message: "Có lỗi xảy ra khi hủy thanh toán",
+        errors: [error.message],
+      };
+    }
+  }
 }
 
 module.exports = new PaymentService();

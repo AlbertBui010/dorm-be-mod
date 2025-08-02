@@ -354,11 +354,15 @@ class PaymentController {
     try {
       const { orderCode } = req.query;
 
-      // Có thể cập nhật trạng thái thanh toán về CHUA_THANH_TOAN nếu cần
-      // const result = await paymentService.cancelPayment(orderCode);
+      // Cập nhật trạng thái thanh toán về CHUA_THANH_TOAN
+      if (orderCode) {
+        await paymentService.cancelPayment(orderCode);
+      }
 
       return res.redirect(
-        `${process.env.FRONTEND_URL}/payments/cancelled?orderCode=${orderCode}`
+        `${process.env.FRONTEND_URL}/payments/cancelled?orderCode=${
+          orderCode || ""
+        }`
       );
     } catch (error) {
       console.error("Error in handlePaymentCancel:", error);
