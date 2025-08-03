@@ -34,8 +34,9 @@ const createSinhVienValidation = [
   body("MatKhau")
     .optional()
     .isLength({ min: 6 })
-    .withMessage("Mật khẩu phải có ít nhất 6 ký tự"),
-
+    .withMessage("Mật khẩu phải có ít nhất 6 ký tự")
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
+    .withMessage("Mật khẩu phải có ít nhất 1 chữ thường, 1 chữ hoa và 1 số"),
   body("EmailDaXacThuc")
     .optional()
     .isBoolean()
@@ -88,7 +89,9 @@ const updateSinhVienValidation = [
   body("MatKhau")
     .optional()
     .isLength({ min: 6 })
-    .withMessage("Mật khẩu phải có ít nhất 6 ký tự"),
+    .withMessage("Mật khẩu phải có ít nhất 6 ký tự")
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
+    .withMessage("Mật khẩu phải có ít nhất 1 chữ thường, 1 chữ hoa và 1 số"),
 
   body("EmailDaXacThuc")
     .optional()
