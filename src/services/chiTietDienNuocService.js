@@ -1,12 +1,19 @@
-const { ChiTietDienNuoc, ChiSoDienNuoc } = require("../models");
+const { ChiTietDienNuoc, ChiSoDienNuoc, Phong } = require("../models");
 const { Op } = require("sequelize");
 
 class ChiTietDienNuocService {
-  // Lấy chi tiết điện nước theo id sinh viên hoặc theo bộ lọc
-  async getChiTietDienNuoc(maSinhVien, filters = {}) {
+  async getChiTietDienNuoc(filters = {}) {
     const where = {};
-    if (maSinhVien) {
-      where.MaSinhVien = maSinhVien;
+    if (filters.MaSinhVien) {
+      where.MaSinhVien = {
+        [Op.like]: `%${filters.MaSinhVien}%`,
+      };
+    }
+
+    if (filters.MaSinhVien) {
+      where.MaSinhVien = {
+        [Op.like]: `%${filters.MaSinhVien}%`,
+      };
     }
     // Thêm các bộ lọc khác nếu cần
     if (filters.MaChiSo) where.MaChiSo = filters.MaChiSo;
@@ -28,6 +35,21 @@ class ChiTietDienNuocService {
         {
           model: ChiSoDienNuoc,
           as: "ChiSoDienNuoc",
+          include: [
+            {
+              model: Phong,
+              as: "Phong",
+              attributes: [
+                "MaPhong",
+                "SoPhong",
+                "LoaiPhong",
+                "SucChua",
+                "GiaThueThang",
+                "DienTich",
+                "TrangThai",
+              ],
+            },
+          ],
         },
       ],
       order: [["ID", "DESC"]],
@@ -41,6 +63,21 @@ class ChiTietDienNuocService {
         {
           model: ChiSoDienNuoc,
           as: "ChiSoDienNuoc",
+          include: [
+            {
+              model: Phong,
+              as: "Phong",
+              attributes: [
+                "MaPhong",
+                "SoPhong",
+                "LoaiPhong",
+                "SucChua",
+                "GiaThueThang",
+                "DienTich",
+                "TrangThai",
+              ],
+            },
+          ],
         },
       ],
     });

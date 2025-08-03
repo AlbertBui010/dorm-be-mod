@@ -1,27 +1,11 @@
 const ChiTietDienNuocService = require("../services/chiTietDienNuocService");
 const { successResponse, errorResponse } = require("../utils/response");
-const { SinhVien } = require("../models");
 
 class ChiTietDienNuocController {
   async getChiTietDienNuoc(req, res) {
     try {
-      const filters = req.query;
-      // Nếu filter theo MaSinhVien, kiểm tra sinh viên có tồn tại không
-      if (filters.MaSinhVien) {
-        const sv = await SinhVien.findOne({
-          where: { MaSinhVien: filters.MaSinhVien },
-        });
-        if (!sv) {
-          return successResponse(
-            res,
-            [],
-            "Không tìm thấy sinh viên với mã này"
-          );
-        }
-      }
       const chiTietDienNuoc = await ChiTietDienNuocService.getChiTietDienNuoc(
-        undefined,
-        filters
+        req.query
       );
       return successResponse(
         res,
