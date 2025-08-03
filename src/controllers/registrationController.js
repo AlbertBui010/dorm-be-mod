@@ -326,24 +326,24 @@ class RegistrationController {
   }
 
   /**
-   * Gia hạn hợp đồng ở ký túc xá
-   * POST /api/registration/renew
+   * Huỷ gia hạn hợp đồng ở ký túc xá
+   * POST /api/registration/cancel-renew
    */
-  async renewContract(req, res) {
+  async cancelRenewContract(req, res) {
     try {
       const maSinhVien = req.user?.MaSinhVien || req.body.maSinhVien;
       if (!maSinhVien) {
         return errorResponse(res, "Thiếu mã sinh viên.", 400);
       }
-      const result = await registrationService.renewContract(maSinhVien);
+      const result = await registrationService.cancelRenewContract(maSinhVien);
       if (result.success) {
         return successResponse(res, result.data, result.message);
       } else {
         return errorResponse(res, result.message, 400);
       }
     } catch (error) {
-      console.error("Lỗi gia hạn hợp đồng:", error);
-      return errorResponse(res, "Có lỗi xảy ra khi gia hạn hợp đồng.", 500);
+      console.error("Lỗi huỷ gia hạn hợp đồng:", error);
+      return errorResponse(res, "Có lỗi xảy ra khi huỷ gia hạn hợp đồng.", 500);
     }
   }
 }

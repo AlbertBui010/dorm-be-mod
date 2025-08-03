@@ -599,14 +599,24 @@ class RegistrationApprovalService {
         );
       }
 
-      // 8. Cập nhật trạng thái đăng ký
+      // 8. Cập nhật trạng thái đăng ký với thông tin phòng và giường
+      console.log(
+        `📋 [APPROVAL] Updating registration ${maDangKy} with room ${maPhong} and bed ${maGiuong}`
+      );
+
       await registration.update(
         {
+          MaPhong: maPhong, // ✅ THÊM: Cập nhật mã phòng
+          MaGiuong: maGiuong, // ✅ THÊM: Cập nhật mã giường
           TrangThai: REGISTRATION_STATUS.DA_DUYET,
           NgayTao: new Date(),
           NguoiTao: nguoiDuyet,
         },
         { transaction }
+      );
+
+      console.log(
+        `✅ [APPROVAL] Registration updated successfully with MaPhong: ${maPhong}, MaGiuong: ${maGiuong}`
       );
 
       await transaction.commit();

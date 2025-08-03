@@ -113,6 +113,6 @@ router.post(
  * @access  Private (cần xác thực)
  * @body    { maSinhVien? } (nếu không có req.user)
  */
-router.post("/renew", registrationController.renewContract);
+router.post("/cancel-renew", registrationController.cancelRenewContract);
 
 module.exports = router;

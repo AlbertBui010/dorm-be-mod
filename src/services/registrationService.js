@@ -2,7 +2,7 @@ const { SinhVien, DangKy, NhanVien, sequelize } = require("../models");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const { sendEmail } = require("../utils/email");
-const { REGISTRATION_STATUS } = require("../constants/dangky");
+const { REGISTRATION_STATUS, NGUYEN_VONG } = require("../constants/dangky");
 const { STUDENT_STATUS } = require("../constants/sinhvien");
 const {
   calculateEndDate,
@@ -10,11 +10,13 @@ const {
   getEndDateCalculationInfo,
 } = require("../utils/dateCalculator");
 const { Op } = require("sequelize");
+const SYSTEM_USER = require("../constants/system");
 
 class RegistrationService {
   /**
    * Đăng ký ở ký túc xá - Bước 1: Tạo đăng ký và gửi email xác thực
-   */
+   **/
+
   async createRegistration(registrationData) {
     const transaction = await sequelize.transaction();
 
@@ -122,7 +124,7 @@ class RegistrationService {
           MaXacThucEmail: maXacThucEmail,
           TrangThai: STUDENT_STATUS.DANG_KY,
           NgayTao: new Date(),
-          NguoiTao: "SYSTEM",
+          NguoiTao: SYSTEM_USER.SYSTEM, // Mặc định hệ thống tạo.
         },
         { transaction }
       );
@@ -157,7 +159,7 @@ class RegistrationService {
           NguyenVong: nguyenVong || null,
           TrangThai: REGISTRATION_STATUS.CHO_DUYET,
           NgayTao: new Date(),
-          NguoiTao: "SYSTEM",
+          NguoiTao: SYSTEM_USER.SYSTEM, // Mặc định hệ thống tạo.
         },
         { transaction }
       );
@@ -415,6 +417,10 @@ class RegistrationService {
   async renewContract(maSinhVien) {
     const transaction = await sequelize.transaction();
     try {
+      console.log(
+        `🔄 [RENEW] Starting contract renewal for student: ${maSinhVien}`
+      );
+
       // 1. Tìm hợp đồng hiện tại của sinh viên (đang ở, đã duyệt, gần nhất)
       const currentContract = await DangKy.findOne({
         where: {
@@ -424,48 +430,124 @@ class RegistrationService {
         order: [["NgayKetThucHopDong", "DESC"]],
         transaction,
       });
+
       if (!currentContract) {
+        console.log(
+          `❌ [RENEW] No current contract found for student: ${maSinhVien}`
+        );
         await transaction.rollback();
         return { success: false, message: "Không tìm thấy hợp đồng hiện tại." };
+      }
+
+      console.log(`✅ [RENEW] Found current contract:`, {
+        MaDangKy: currentContract.MaDangKy,
+        NgayKetThucHopDong: currentContract.NgayKetThucHopDong,
+        MaPhong: currentContract.MaPhong,
+        MaGiuong: currentContract.MaGiuong,
+      });
+
+      // ✅ KIỂM TRA: Validate MaPhong và MaGiuong
+      if (!currentContract.MaPhong) {
+        console.log(
+          `❌ [RENEW] Current contract missing MaPhong for student: ${maSinhVien}`
+        );
+        await transaction.rollback();
+        return {
+          success: false,
+          message:
+            "Hợp đồng hiện tại thiếu thông tin phòng. Vui lòng liên hệ quản trị viên.",
+        };
+      }
+
+      if (!currentContract.MaGiuong) {
+        console.log(
+          `⚠️ [RENEW] Current contract missing MaGiuong for student: ${maSinhVien} - continuing without bed info`
+        );
       }
       // 2. Kiểm tra hợp đồng sắp hết hạn (trong 7 ngày)
       const today = new Date();
       const endDate = new Date(currentContract.NgayKetThucHopDong);
       const diffDays = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
+
+      console.log(
+        `📅 [RENEW] Contract end date: ${endDate.toISOString().split("T")[0]}`
+      );
+      console.log(`📅 [RENEW] Today: ${today.toISOString().split("T")[0]}`);
+      console.log(`📅 [RENEW] Days until expiry: ${diffDays}`);
+
       if (diffDays > 7) {
+        console.log(
+          `⏰ [RENEW] Contract not eligible for renewal yet (${diffDays} days remaining)`
+        );
         await transaction.rollback();
         return { success: false, message: "Hợp đồng chưa đến hạn gia hạn." };
       }
+
       // 3. Tính ngày bắt đầu/kết thúc quý mới
       const newStartDate = new Date(currentContract.NgayKetThucHopDong);
       newStartDate.setDate(newStartDate.getDate() + 1);
       const newEndDate = calculateEndDate(newStartDate);
+
+      console.log(
+        `📅 [RENEW] New period: ${newStartDate.toISOString().split("T")[0]} → ${
+          newEndDate.toISOString().split("T")[0]
+        }`
+      );
+      console.log(
+        `📅 [RENEW] New period formatted: ${newStartDate.toLocaleDateString(
+          "vi-VN"
+        )} → ${newEndDate.toLocaleDateString("vi-VN")}`
+      );
       // 4. Lấy thông tin phòng
       const maPhong = currentContract.MaPhong;
       if (!maPhong) {
+        console.log(`❌ [RENEW] No room ID found in current contract`);
         await transaction.rollback();
         return { success: false, message: "Không xác định được phòng ở." };
       }
+
       const Phong = require("../models/Phong");
       const room = await Phong.findByPk(maPhong, { transaction });
       if (!room) {
+        console.log(`❌ [RENEW] Room not found: ${maPhong}`);
         await transaction.rollback();
         return { success: false, message: "Không tìm thấy thông tin phòng." };
       }
+
+      console.log(`🏠 [RENEW] Room details:`, {
+        MaPhong: room.MaPhong,
+        SoPhong: room.SoPhong,
+        GiaThueThang: room.GiaThueThang,
+      });
+
       // 5. Tính tiền phòng quý mới
       const registrationApprovalService = require("./registrationApprovalService");
-      const fee = registrationApprovalService.prototype.calculateRoomFee(
+      const fee = registrationApprovalService.calculateRoomFee(
         parseFloat(room.GiaThueThang),
         newStartDate,
         newEndDate
       );
+
+      console.log(`💰 [RENEW] Fee calculation:`, {
+        giaThueThang: room.GiaThueThang,
+        soTien: fee.soTien,
+        tongSoThang: fee.tongSoThang,
+      });
       // 6. Tạo hóa đơn tiền phòng mới
       const ThanhToan = require("../models/ThanhToan");
       const thangNam = `${String(newStartDate.getMonth() + 1).padStart(
         2,
         "0"
       )}/${newStartDate.getFullYear()}`;
-      await ThanhToan.create(
+
+      console.log(`📄 [RENEW] Creating payment invoice:`, {
+        MaSinhVien: maSinhVien,
+        MaPhong: maPhong,
+        ThangNam: thangNam,
+        SoTien: fee.soTien,
+      });
+
+      const newPayment = await ThanhToan.create(
         {
           MaSinhVien: maSinhVien,
           MaPhong: maPhong,
@@ -475,26 +557,45 @@ class RegistrationService {
           SoTien: fee.soTien,
           TrangThai: "CHUA_THANH_TOAN",
           NgayTao: new Date(),
-          NguoiTao: maSinhVien,
+          NguoiTao: SYSTEM_USER.SYSTEM, // Mặc định hệ thống tạo.
         },
         { transaction }
       );
+
+      console.log(`✅ [RENEW] Payment invoice created:`, {
+        MaThanhToan: newPayment.MaThanhToan,
+      });
+
       // 7. (Tùy chọn) Tạo bản ghi đăng ký mới hoặc cập nhật hợp đồng hiện tại
       // Ở đây: tạo bản ghi DangKy mới cho kỳ mới
-      await DangKy.create(
+      console.log(`📋 [RENEW] Creating new registration record...`);
+
+      const newRegistration = await DangKy.create(
         {
           MaSinhVien: maSinhVien,
-          MaPhong: maPhong,
+          MaPhong: maPhong, // ✅ THÊM: Sử dụng cùng phòng
+          MaGiuong: currentContract.MaGiuong, // ✅ THÊM: Sử dụng cùng giường (nếu có)
           NgayDangKy: new Date(),
           NgayNhanPhong: newStartDate,
           NgayKetThucHopDong: newEndDate,
-          TrangThai: REGISTRATION_STATUS.CHO_DUYET,
+          TrangThai: REGISTRATION_STATUS.DA_DUYET,
+          NguyenVong: NGUYEN_VONG.TU_GIA_HAN,
           NgayTao: new Date(),
-          NguoiTao: maSinhVien,
+          NguoiTao: SYSTEM_USER.SYSTEM, // Mặc định hệ thống tạo.
         },
         { transaction }
       );
+
+      console.log(`✅ [RENEW] New registration created:`, {
+        MaDangKy: newRegistration.MaDangKy,
+        TrangThai: newRegistration.TrangThai,
+      });
       await transaction.commit();
+
+      console.log(
+        `✅ [RENEW] Contract renewal completed successfully for ${maSinhVien}`
+      );
+
       return {
         success: true,
         message:
@@ -507,7 +608,11 @@ class RegistrationService {
       };
     } catch (error) {
       await transaction.rollback();
-      console.error("Lỗi gia hạn hợp đồng:", error);
+      console.error(`❌ [RENEW] Error renewing contract for ${maSinhVien}:`, {
+        message: error.message,
+        stack: error.stack,
+        name: error.name,
+      });
       return { success: false, message: "Có lỗi xảy ra khi gia hạn hợp đồng." };
     }
   }
@@ -570,6 +675,54 @@ class RegistrationService {
     };
 
     return await sendEmail(emailContent);
+  }
+
+  async cancelRenewContract(maSinhVien) {
+    const transaction = await sequelize.transaction();
+
+    try {
+      // Tìm đăng ký gần nhất của sinh viên
+      const dangKy = await DangKy.findOne({
+        where: {
+          MaSinhVien: maSinhVien,
+          TrangThai: REGISTRATION_STATUS.DA_DUYET,
+        },
+        order: [["NgayTao", "DESC"]],
+        transaction,
+      });
+
+      if (!dangKy) {
+        await transaction.rollback();
+        return {
+          success: false,
+          message: "Không tìm thấy đăng ký gia hạn nào.",
+        };
+      }
+
+      // Cập nhật  đăng ký
+      await dangKy.update(
+        {
+          NguyenVong: NGUYEN_VONG.KHONG_GIA_HAN,
+          NgayCapNhat: new Date(),
+          NguoiCapNhat: maSinhVien,
+        },
+        { transaction }
+      );
+
+      await transaction.commit();
+
+      return {
+        success: true,
+        message: "Đã huỷ yêu cầu gia hạn thành công.",
+      };
+    } catch (error) {
+      await transaction.rollback();
+      console.error("Lỗi huỷ gia hạn:", error);
+      return {
+        success: false,
+        message: `Có lỗi xảy ra khi huỷ gia hạn: ${error.message}`,
+      };
+    }
   }
 }
 
