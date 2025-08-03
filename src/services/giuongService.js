@@ -371,40 +371,46 @@ class GiuongService {
   }
 
   async getBedStatistics() {
-    const stats = await Giuong.findAll({
-      attributes: [
-        [sequelize.fn("COUNT", sequelize.col("MaGiuong")), "TongSoGiuong"],
-        [
-          sequelize.fn(
-            "SUM",
-            sequelize.cast(sequelize.col("DaCoNguoi"), "integer")
-          ),
-          "SoGiuongDangO",
+    try {
+      // Get total bed statistics without grouping
+      const totalStats = await Giuong.findOne({
+        attributes: [
+          [sequelize.fn("COUNT", sequelize.col("MaGiuong")), "TongSoGiuong"],
+          [
+            sequelize.fn(
+              "SUM",
+              sequelize.cast(sequelize.col("DaCoNguoi"), "integer")
+            ),
+            "SoGiuongDangO",
+          ],
+          [
+            sequelize.fn(
+              "SUM",
+              sequelize.cast(
+                sequelize.literal(
+                  'CASE WHEN "DaCoNguoi" = false THEN 1 ELSE 0 END'
+                ),
+                "integer"
+              )
+            ),
+            "SoGiuongTrong",
+          ],
         ],
-        [
-          sequelize.fn(
-            "SUM",
-            sequelize.cast(
-              sequelize.literal(
-                'CASE WHEN "DaCoNguoi" = false THEN 1 ELSE 0 END'
-              ),
-              "integer"
-            )
-          ),
-          "SoGiuongTrong",
-        ],
-      ],
-      include: [
-        {
-          model: Phong,
-          as: "Phong",
-          attributes: ["LoaiPhong"],
-        },
-      ],
-      group: ["Phong.LoaiPhong"],
-    });
+        raw: true,
+      });
 
-    return stats;
+      // Convert string numbers to integers
+      const result = {
+        TongSoGiuong: parseInt(totalStats.TongSoGiuong) || 0,
+        SoGiuongDangO: parseInt(totalStats.SoGiuongDangO) || 0,
+        SoGiuongTrong: parseInt(totalStats.SoGiuongTrong) || 0,
+      };
+
+      return result;
+    } catch (error) {
+      console.error("Error in getBedStatistics service:", error);
+      throw error;
+    }
   }
 }
 

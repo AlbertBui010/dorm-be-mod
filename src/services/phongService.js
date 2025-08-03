@@ -230,17 +230,47 @@ class PhongService {
   }
 
   async getRoomStatistics() {
-    const stats = await Phong.findAll({
-      attributes: [
-        "LoaiPhong",
-        [sequelize.fn("COUNT", sequelize.col("MaPhong")), "TongSoPhong"],
-        [sequelize.fn("SUM", sequelize.col("SucChua")), "TongSucChua"],
-        [sequelize.fn("SUM", sequelize.col("SoLuongHienTai")), "TongDangO"],
-      ],
-      group: ["LoaiPhong"],
-    });
+    try {
+      // Get detailed stats by room type
+      const detailedStats = await Phong.findAll({
+        attributes: [
+          "LoaiPhong",
+          [sequelize.fn("COUNT", sequelize.col("MaPhong")), "SoPhong"],
+          [sequelize.fn("SUM", sequelize.col("SucChua")), "SucChua"],
+          [sequelize.fn("SUM", sequelize.col("SoLuongHienTai")), "DangO"],
+        ],
+        group: ["LoaiPhong"],
+        raw: true,
+      });
 
-    return stats;
+      // Get total statistics
+      const totalStats = await Phong.findOne({
+        attributes: [
+          [sequelize.fn("COUNT", sequelize.col("MaPhong")), "totalRooms"],
+          [sequelize.fn("SUM", sequelize.col("SucChua")), "totalCapacity"],
+          [
+            sequelize.fn("SUM", sequelize.col("SoLuongHienTai")),
+            "totalOccupied",
+          ],
+        ],
+        raw: true,
+      });
+
+      return {
+        totalRooms: parseInt(totalStats.totalRooms) || 0,
+        totalCapacity: parseInt(totalStats.totalCapacity) || 0,
+        totalOccupied: parseInt(totalStats.totalOccupied) || 0,
+        byType: detailedStats.map((stat) => ({
+          loaiPhong: stat.LoaiPhong,
+          soPhong: parseInt(stat.SoPhong) || 0,
+          sucChua: parseInt(stat.SucChua) || 0,
+          dangO: parseInt(stat.DangO) || 0,
+        })),
+      };
+    } catch (error) {
+      console.error("Error in getRoomStatistics service:", error);
+      throw error;
+    }
   }
 }
 

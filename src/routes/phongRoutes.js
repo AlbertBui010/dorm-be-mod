@@ -26,7 +26,7 @@ router.get("/available", PhongController.getAvailableRooms);
 // GET /api/phong/statistics - Get room statistics
 router.get(
   "/statistics",
-  authorize(["QuanTriVien,NhanVien"]),
+  authorize(["QuanTriVien", "NhanVien"]),
   PhongController.getRoomStatistics
 );
 
