@@ -131,7 +131,21 @@ class RegistrationApprovalService {
         ],
         limit,
         offset,
-        order: [["NgayTao", "ASC"]],
+        // Sắp xếp CHO_DUYET lên đầu, sau đó theo ngày tạo tăng dần
+        order: [
+          [
+            sequelize.literal(`
+            CASE 
+              WHEN "DangKy"."TrangThai" = '${REGISTRATION_STATUS.CHO_DUYET}' THEN 1
+              WHEN "DangKy"."TrangThai" = '${REGISTRATION_STATUS.DA_DUYET}' THEN 2  
+              WHEN "DangKy"."TrangThai" = '${REGISTRATION_STATUS.DA_TU_CHOI}' THEN 3
+              ELSE 4
+            END
+          `),
+            "ASC",
+          ],
+          ["NgayTao", "ASC"],
+        ],
         attributes: [
           "MaDangKy",
           "MaSinhVien",

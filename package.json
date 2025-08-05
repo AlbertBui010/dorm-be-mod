@@ -12,7 +12,8 @@
     "seed-user-pass": "node scripts/seed.js",
     "seed-payments": "node scripts/seed-payments.js",
     "mark-overdue": "node -e \"require('./src/utils/paymentCronJobs').runOverdueCheckNow()\"",
-    "test-yeu-cau-chuyen-phong": "node scripts/test-yeu-cau-chuyen-phong.js"
+    "test-yeu-cau-chuyen-phong": "node scripts/test-yeu-cau-chuyen-phong.js",
+    "seed-admin": "node scripts/seed-admin.js"
   },
   "keywords": [
     "dormitory",

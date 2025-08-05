@@ -31,7 +31,7 @@ const DonGiaDienNuoc = sequelize.define(
       defaultValue: DataTypes.NOW,
     },
     NguoiTao: {
-      type: DataTypes.STRING(50),
+      type: DataTypes.INTEGER,
       allowNull: true,
     },
     NgayCapNhat: {
@@ -39,7 +39,7 @@ const DonGiaDienNuoc = sequelize.define(
       defaultValue: DataTypes.NOW,
     },
     NguoiCapNhat: {
-      type: DataTypes.STRING(50),
+      type: DataTypes.INTEGER,
       allowNull: true,
     },
   },

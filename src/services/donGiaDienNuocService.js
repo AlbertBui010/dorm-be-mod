@@ -1,4 +1,4 @@
-const { DonGiaDienNuoc, ChiTietDienNuoc } = require("../models");
+const { DonGiaDienNuoc, NhanVien } = require("../models");
 const { Op } = require("sequelize");
 const sequelize = require("../config/database");
 
@@ -32,6 +32,15 @@ const donGiaDienNuocService = {
 
     const { count, rows } = await DonGiaDienNuoc.findAndCountAll({
       where: whereClause,
+      include: [
+        {
+          model: NhanVien,
+          as: "NguoiTaoInfo",
+          attributes: ["HoTen", "MaNhanVien"],
+          foreignKey: "NguoiTao",
+          required: false,
+        },
+      ],
       order: [["NgayApDung", "DESC"]],
       limit: parseInt(limit),
       offset: parseInt(offset),

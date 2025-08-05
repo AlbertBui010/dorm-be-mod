@@ -100,6 +100,28 @@ YeuCauChuyenPhong.belongsTo(Phong, {
   as: "PhongMoi",
 });
 
+// DonGiaDienNuoc - NhanVien (Many to One)
+DonGiaDienNuoc.belongsTo(NhanVien, {
+  foreignKey: "NguoiTao",
+  as: "NguoiTaoInfo",
+});
+
+DonGiaDienNuoc.belongsTo(NhanVien, {
+  foreignKey: "NguoiCapNhat",
+  as: "NguoiCapNhatInfo",
+});
+
+// Associations ngược
+NhanVien.hasMany(DonGiaDienNuoc, {
+  foreignKey: "NguoiTao",
+  as: "DonGiaTao",
+});
+
+NhanVien.hasMany(DonGiaDienNuoc, {
+  foreignKey: "NguoiCapNhat",
+  as: "DonGiaCapNhat",
+});
+
 module.exports = {
   sequelize,
   NhanVien,

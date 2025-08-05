@@ -1,3 +1,4 @@
+const SYSTEM_USER = require("../constants/system");
 const registrationApprovalService = require("../services/registrationApprovalService");
 const { successResponse, errorResponse } = require("../utils/response");
 
@@ -8,7 +9,14 @@ class RegistrationApprovalController {
    */
   async getPendingRegistrations(req, res) {
     try {
-      const { page = 1, limit = 10, search, gioiTinh, nguyenVong, trangThai } = req.query;
+      const {
+        page = 1,
+        limit = 10,
+        search,
+        gioiTinh,
+        nguyenVong,
+        trangThai,
+      } = req.query;
 
       const result = await registrationApprovalService.getPendingRegistrations({
         page: parseInt(page),
@@ -112,7 +120,7 @@ class RegistrationApprovalController {
     try {
       const { maDangKy } = req.params;
       const { maPhong, maGiuong, ghiChu } = req.body;
-      const nguoiDuyet = req.user?.maNhanVien || "ADMIN";
+      const nguoiDuyet = req.user?.MaNhanVien || SYSTEM_USER.SYSTEM;
 
       // Validation
       if (!maPhong || !maGiuong) {
@@ -146,7 +154,7 @@ class RegistrationApprovalController {
     try {
       const { maDangKy } = req.params;
       const { lyDoTuChoi } = req.body;
-      const nguoiDuyet = req.user?.maNhanVien || "ADMIN";
+      const nguoiDuyet = req.user?.MaNhanVien || SYSTEM_USER.SYSTEM;
 
       // Validation
       if (!lyDoTuChoi) {
